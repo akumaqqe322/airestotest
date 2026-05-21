@@ -16,6 +16,11 @@ const emit = defineEmits<{
 
 const isCurrentlyHovered = ref(false);
 
+const isCompact = computed(() => {
+  return props.event.heightPx < 44;
+});
+
+
 // Style configurations depending on status/types
 const themeColors = computed(() => {
   const s = props.event.status;
@@ -103,7 +108,7 @@ const themeColors = computed(() => {
         return {
           bg: isDark ? 'bg-zinc-900' : 'bg-slate-100',
           borderL: 'border-l-slate-400',
-          badgeBg: 'bg-slate-400/10 text-slate-405 border-slate-400/20',
+          badgeBg: 'bg-slate-400/10 text-slate-400 border-slate-400/20',
           textClass: 'text-slate-400',
           accentBorder: 'border-slate-500/20'
         };
@@ -112,7 +117,7 @@ const themeColors = computed(() => {
           bg: isDark ? 'bg-zinc-900' : 'bg-slate-50',
           borderL: 'border-l-slate-500',
           badgeBg: 'bg-slate-500/10 text-slate-500 border-slate-500/20',
-          textClass: 'text-slate-550',
+          textClass: 'text-slate-500',
           accentBorder: 'border-slate-500/20'
         };
     }
@@ -146,49 +151,69 @@ function formatDisplayTime(val: string): string {
       themeColors.bg,
       themeColors.borderL,
       theme === 'light' 
-        ? 'border-slate-200 border-r border-t border-b hover:bg-slate-100/50' 
-        : 'border-zinc-800 border-r border-t border-b hover:bg-zinc-800/80',
-      isCurrentlyHovered ? 'shadow-xl scale-[1.01] border-zinc-500/40' : 'shadow-sm',
-      'absolute border-l-[3px] rounded-r-md px-2 py-1.5 flex flex-col justify-between select-none cursor-pointer overflow-hidden transition-all duration-150'
+        ? 'border-slate-200 border-r border-t border-b hover:bg-slate-100' 
+        : 'border-zinc-800 border-r border-t border-b hover:bg-zinc-800',
+      isCurrentlyHovered ? 'shadow-lg scale-[1.01]' : 'shadow-none',
+      isCompact ? 'px-1 py-0.5' : 'px-2 py-1.5',
+      'absolute border-l-[3px] rounded-r-md flex flex-col justify-between select-none cursor-pointer overflow-hidden transition-all duration-150'
     ]"
   >
     <!-- Normal minimal card layout -->
-    <div class="flex flex-col h-full justify-between min-w-0">
+    <div class="flex flex-col h-full justify-between min-w-0 w-full">
       
-      <!-- Top: Status + Time Range -->
-      <div class="flex items-center justify-between gap-1 min-w-0">
-        <!-- Status Label -->
-        <span 
-          :class="[
-            themeColors.badgeBg,
-            'text-[8.5px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider truncate border leading-none shrink-0'
-          ]"
-        >
-          {{ event.status }}
-        </span>
-        <!-- Time Range -->
-        <span :class="[theme === 'light' ? 'text-slate-500' : 'text-slate-400', 'text-[9.5px] font-mono font-semibold shrink-0']">
-          {{ formatDisplayTime(event.startTime) }}
-        </span>
-      </div>
+      <template v-if="isCompact">
+        <!-- Compact Row: Status + Time side-by-side -->
+        <div class="flex items-center justify-between gap-1 w-full min-w-0 h-full">
+          <span 
+            :class="[
+              themeColors.badgeBg,
+              'text-[8px] font-bold px-1 py-0 rounded uppercase tracking-wider truncate border leading-none shrink-0'
+            ]"
+          >
+            {{ event.status }}
+          </span>
+          <span :class="[theme === 'light' ? 'text-slate-600' : 'text-slate-300', 'text-[8.5px] font-mono leading-none truncate font-bold shrink-0']">
+            {{ formatDisplayTime(event.startTime) }}
+          </span>
+        </div>
+      </template>
 
-      <!-- Center: Guest Name / Order tag -->
-      <div class="my-auto min-w-0 pr-1">
-        <h4 :class="[theme === 'light' ? 'text-slate-900' : 'text-white', 'text-[11px] font-extrabold tracking-tight truncate leading-tight']">
-          {{ event.type === 'reservation' ? event.name : (event.status === 'Banquet' ? 'Банкет' : 'Заказ стола') }}
-        </h4>
-      </div>
+      <template v-else>
+        <!-- Top: Status + Time Range -->
+        <div class="flex items-center justify-between gap-1 min-w-0 w-full leading-none">
+          <!-- Status Label -->
+          <span 
+            :class="[
+              themeColors.badgeBg,
+              'text-[8.5px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider truncate border leading-none shrink-0'
+            ]"
+          >
+            {{ event.status }}
+          </span>
+          <!-- Time Range -->
+          <span :class="[theme === 'light' ? 'text-slate-500' : 'text-slate-400', 'text-[9.5px] font-mono font-semibold shrink-0']">
+            {{ formatDisplayTime(event.startTime) }}-{{ formatDisplayTime(event.endTime) }}
+          </span>
+        </div>
 
-      <!-- Bottom: Guest Count if space allows -->
-      <div class="flex items-center justify-between text-[9px] text-slate-400 mt-0.5 leading-none font-mono">
-        <span v-if="event.numPeople && event.heightPx >= 50" class="flex items-center gap-1">
-          <User class="w-2.5 h-2.5 shrink-0 opacity-70" />
-          <span>{{ event.numPeople }} чел</span>
-        </span>
-        <span class="ml-auto opacity-60">
-          {{ formatDisplayTime(event.endTime) }}
-        </span>
-      </div>
+        <!-- Center: Guest Name / Order tag -->
+        <div class="my-auto min-w-0 pr-1 w-full leading-tight">
+          <h4 :class="[theme === 'light' ? 'text-slate-900 font-extrabold' : 'text-white font-extrabold', 'text-[11px] tracking-tight truncate']">
+            {{ event.type === 'reservation' ? event.name : (event.status === 'Banquet' ? 'Банкет' : 'Заказ') }}
+          </h4>
+        </div>
+
+        <!-- Bottom: Guest Count if space allows -->
+        <div v-if="event.heightPx >= 52" class="flex items-center justify-between text-[9px] text-slate-400 mt-0.5 leading-none font-mono">
+          <span v-if="event.type === 'reservation'" class="flex items-center gap-1 shrink-0 font-medium">
+            <User class="w-2.5 h-2.5 shrink-0 opacity-70" />
+            <span>{{ event.numPeople }} чел</span>
+          </span>
+          <span class="ml-auto opacity-70">
+            {{ formatDisplayTime(event.endTime) }}
+          </span>
+        </div>
+      </template>
 
     </div>
 

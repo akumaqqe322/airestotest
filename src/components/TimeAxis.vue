@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { generateTimeTicks, minutesToTime } from '../utils/time';
+import { TIME_AXIS_WIDTH } from '../constants/timeline';
 
 const props = withDefaults(defineProps<{
   openingTime: string;
@@ -35,7 +36,7 @@ const blockHeight = computed(() => {
       theme === 'light' ? 'bg-slate-50 border-slate-200 text-slate-600' : 'bg-[#111315] border-[#2d3139] text-[#718096]',
       'relative select-none border-r transition-colors'
     ]"
-    style="width: 70px;"
+    :style="{ width: `${TIME_AXIS_WIDTH}px` }"
   >
     <!-- Time Ticks Column -->
     <div class="flex flex-col">

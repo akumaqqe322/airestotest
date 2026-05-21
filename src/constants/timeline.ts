@@ -1,3 +1,5 @@
 export const TIMELINE_PIXELS_PER_MINUTE = 2.3;
 export const TIMELINE_COLUMN_WIDTH = 190;
 export const SELECTION_SNAP_MINUTES = 15;
+export const TIME_AXIS_WIDTH = 72;
+export const TABLE_HEADER_HEIGHT = 58;
