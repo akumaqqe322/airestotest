@@ -354,11 +354,13 @@ function handleDeleteReservation({ eventId, tableId }: { eventId: string | numbe
         <DateSwitcher
           :available-days="bookingData.available_days"
           v-model:selected-day="selectedDay"
+          :theme="theme"
         />
 
         <ZoneFilter
           :zones="availableZones"
           v-model:selected-zones="selectedZones"
+          :theme="theme"
         />
 
         <!-- Optional developer time manual adjusters (shown nicely in corner) -->

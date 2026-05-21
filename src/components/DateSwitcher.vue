@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { Calendar } from 'lucide-vue-next';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   availableDays: string[];
   selectedDay: string;
-}>();
+  theme?: 'dark' | 'light';
+}>(), {
+  theme: 'dark'
+});
 
 const emit = defineEmits<{
   (e: 'update:selectedDay', value: string): void;
@@ -39,8 +42,13 @@ function formatDay(dateStr: string): { dayNum: string; month: string; weekday: s
 </script>
 
 <template>
-  <div class="flex items-center gap-3 bg-[#14161d] p-1.5 rounded-xl border border-[#2d3139] overflow-x-auto scrollbar-none max-w-full">
-    <div class="flex items-center gap-2 px-3 text-gray-500 border-r border-[#2d3139]">
+  <div 
+    :class="[
+      theme === 'light' ? 'bg-white border-[#e2e8f0]' : 'bg-[#14161d] border-[#2d3139]',
+      'flex items-center gap-3 p-1.5 rounded-xl border overflow-x-auto scrollbar-none max-w-full transition-colors duration-200'
+    ]"
+  >
+    <div :class="[theme === 'light' ? 'border-slate-200' : 'border-[#2d3139]', 'flex items-center gap-2 px-3 text-gray-500 border-r']">
       <Calendar class="w-4 h-4 text-amber-500" />
       <span class="text-xs font-semibold uppercase tracking-wider hidden sm:inline">Дата</span>
     </div>
@@ -54,7 +62,7 @@ function formatDay(dateStr: string): { dayNum: string; month: string; weekday: s
           'flex flex-col items-center justify-center px-4 py-2 rounded-lg transition-all duration-150 cursor-pointer min-w-[70px]',
           selectedDay === day
             ? 'bg-amber-500 text-black font-semibold shadow-md shadow-amber-500/10'
-            : 'bg-transparent text-gray-400 hover:bg-[#1b1e26] hover:text-white'
+            : (theme === 'light' ? 'bg-transparent text-slate-500 hover:bg-slate-50 hover:text-slate-900 border border-transparent hover:border-slate-200' : 'bg-transparent text-gray-400 hover:bg-[#1b1e26] hover:text-white')
         ]"
       >
         <span class="text-[10px] uppercase font-bold tracking-wider opacity-85">
