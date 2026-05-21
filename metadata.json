@@ -1,0 +1,6 @@
+{
+  "name": "Restaurant Booking Timeline",
+  "description": "An interactive restaurant booking timeline for Airesto showing tables, zones, and booking slots with overlap detection.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
