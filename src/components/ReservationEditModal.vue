@@ -71,11 +71,15 @@ function validateForm(): boolean {
   const errs: { [key: string]: string } = {};
 
   if (!formName.value.trim()) {
-    errs.name = 'Имя гостя обязательно для заполнения';
+    errs.name = 'Имя не может быть пустым';
   }
 
   if (formPeople.value < 1) {
-    errs.people = 'Количество человек должно быть не менее 1';
+    errs.people = 'Количество гостей должно быть больше 0';
+  }
+
+  if (!formTableId.value) {
+    errs.tableId = 'Выберите стол';
   }
 
   const startMins = timeToMinutes(formStartTime.value);
@@ -88,11 +92,11 @@ function validateForm(): boolean {
   }
 
   if (startMins < opMins || startMins > clMins) {
-    errs.startTime = `Время начала должно быть в рамках работы ресторана (${props.openingTime} - ${props.closingTime})`;
+    errs.startTime = 'Время должно быть в пределах работы ресторана';
   }
 
   if (endMins < opMins || endMins > clMins) {
-    errs.endTime = `Время окончания должно быть в рамках работы ресторана (${props.openingTime} - ${props.closingTime})`;
+    errs.endTime = 'Время должно быть в пределах работы ресторана';
   }
 
   errors.value = errs;
@@ -239,6 +243,7 @@ function handleDelete() {
                 Стол №{{ table.number }} ({{ table.zone }})
               </option>
             </select>
+            <span v-if="errors.tableId" class="text-[10px] text-rose-500 mt-0.5 leading-none">{{ errors.tableId }}</span>
           </div>
 
           <div class="flex flex-col gap-1.5">
@@ -253,11 +258,11 @@ function handleDelete() {
                 'w-full px-3.5 py-2.5 rounded-xl border text-sm focus:outline-none transition-all'
               ]"
             >
-              <option value="Живая очередь">Живая очередь (Blue)</option>
-              <option value="Новая">Новая (Orange)</option>
-              <option value="Заявка">Заявка (Yellow)</option>
-              <option value="Открыт">Открыт (Green)</option>
-              <option value="Закрыт">Закрыт (Slate)</option>
+              <option value="Живая очередь">Живая очередь (Синий)</option>
+              <option value="Новая">Новая (Оранжевый)</option>
+              <option value="Заявка">Заявка (Жёлтый)</option>
+              <option value="Открыт">Открыт (Зелёный)</option>
+              <option value="Закрыт">Закрыт (Серый)</option>
             </select>
           </div>
         </div>

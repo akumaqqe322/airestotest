@@ -1,47 +1,50 @@
-# Restaurant Booking Timeline (Airesto)
+# Таймлайн бронирования столов (Airesto)
 
-## Overview
-An interactive restaurant booking timeline designed for floor managers to monitor, search, and arrange table reservations and orders in real time. It represents tables as horizontally scrollable column tracks, and time as a vertical axis mapping out the restaurant's operational hours.
+## Демо
+[Ссылка на демо-версию приложения](https://ais-pre-ouv75w2hvgxszjebgngojq-125225337203.europe-west3.run.app)
 
-This implementation is custom-built on a lightweight, performant layout without relying on heavy external scheduler, calendar, or table grid libraries. It remains smooth with large datasets and active interactions.
+## Описание
+Интерактивный таймлайн бронирования ресторанных столов, разработанный для хостес и менеджеров залов. Позволяет оперативно просматривать, искать и планировать резервы и заказы в режиме реального времени. Столы представлены в виде горизонтально прокручиваемых колонок, а время — в виде вертикальной оси, отображающей рабочие часы ресторана.
 
-## Tech Stack
-- **Framework**: Vue 3 (Composition API with Single File Components)
-- **Build Tool**: Vite
-- **Language**: TypeScript (with strict types)
-- **Styling**: Tailwind CSS (using CSS variable themes)
-- **Icons**: Lucide Icons
-- **Libraries**: No third-party calendar or scheduler grids are used.
+Реализация построена на легковесной, высокопроизводительной верстке без использования тяжелых сторонних библиотек для планировщиков или таблиц. Страница сохраняет высокую плавность анимаций как при больших объемах данных, так и при активном взаимодействии.
 
-## Implemented Features
-- **Clean Vue 3 Setup**: Completely pruned and cleaned from all React templates.
-- **Dynamic Date Switcher**: Shift dates and see corresponding mock data load dynamically.
-- **Multi-Zone Filter**: Multi-select table zones (`1 этаж`, `2 этаж`, `Банкетный зал`) with reactive, high-performance resizing.
-- **Timezone-Aware Current Time**: Displays and updates the current time localized to the restaurant's timezone ("Asia/Vladivostok") with a real-time current time indicator line.
-- **Sticky Column Headers & Time Axis**: Ensures column headers remain visible at the top, and the time coordinates remain sticky on the left during deep horizontal or vertical scrolls.
-- **All Event Statuses**: Renders both reservations and active checks/orders with distinct visual indicators based on their native status values.
-- **Interactive Hover States**: Highlights specific cards dynamically on hover, increasing their stacking context index and revealing secondary details (such as customer telephone numbers).
-- **Collision & Overlap Layout Engine**: Programmatically runs a fast layout routine to offset overlapping reservation blocks into adjacent column lanes, preventing text content from overlaying or colliding.
-- **Smart Compact Hiding**: Collapses card text density for small duration blocks or multiple overlaps to prevent layout overflows.
+## Стек
+- **Фреймворк**: Vue 3 (Composition API, Single File Components)
+- **Сборщик**: Vite
+- **Язык**: TypeScript (строгая типизация)
+- **Стилизация**: Tailwind CSS (с темами оформления на CSS-переменных)
+- **Иконки**: Lucide Icons
+- **Библиотеки**: Без внешних зависимостей для сеток/календарей
 
-## Additional Tasks Implemented
-- **Dual Visual Themes**: Support for Dark Mode and Light Mode, persisted in localStorage.
-- **Horizontal & Vertical Drag-Selection**: Staff can click and drag across multiple table tracks and time spans using Pointer Capture to easily claim a custom reservation slot. Snaps cleanly to 15-minute segments and clamps bounds inside operating hours.
-- **Live Overlaps & Conflict Warnings**: Instantly changes the visual color of the active selection area to crimson (with a warning text indicator in the drawer) if the selection overlaps with any existing bookings.
-- **Floating Slots Drawer**: Displays selected tables, timestamps, and zone coverage.
-- **Explicit Create Flow**: Clicking the "Создать" or "Создать с конфликтом" button issues exactly one consolidated console.log payload containing table numbers and conflict status parameters, and inserts bookings locally into the reactive app state.
+## Реализованный функционал
+- **Чистый проект на Vue 3**: Полностью очищен от шаблона React, настроен и оптимизирован.
+- **Динамическое переключение даты**: Переключение между доступными днями и мгновенная реактивная загрузка соответствующих данных.
+- **Мульти-выбор зон**: Фильтрация столов по залам («1 этаж», «2 этаж», «Банкетный зал») с корректным пересчетом колонок.
+- **Отображение текущего времени ресторана**: Учет таймзоны («Asia/Vladivostok») с отображением и обновлением в реальном времени текущего часа ресторана и красной линии-маркера.
+- **Закрепленные заголовки столов и шкала времени**: Sticky-позиционирование шапки столов при вертикальной прокрутке и оси времени при горизонтальной прокрутке.
+- **Полная поддержка статусов**: Отображение броней и активных чеков/заказов с цветовым кодированием оригинальных статусов API.
+- **Интерактивные попапы (Ховер)**: Плавное отображение подробной информации о резерве/заказе при наведении (включая имя, время, гостей и телефон) с увеличением z-index.
+- **Алгоритм предотвращения пересечений**: Программный расчет накладывающихся броней с их разведением в соседние дорожки (колонки) для предотвращения визуального наложения текста.
+- **Компактное скрытие контента**: Автоматическое упрощение отображения карточек очень короткой длительности или сильных пересечений во избежание переполнения разметки.
 
-## Local Setup
-1. **Install Dependencies**:
+## Дополнительные задания
+- **Две темы оформления**: Темная и Светлая темы оформления с сохранением выбора пользователя в localStorage.
+- **Групповое выделение перетаскиванием (drag-and-select)**: Возможность зажать и протянуть мышь/тач по нескольким столам и интервалам времени для создания резерва. Присутствует округление к 15-минутным шагам и ограничение рабочими часами ресторана.
+- **Подсвечивание конфликтов в реальном времени**: Мгновенное окрашивание области выделения в красный цвет и предупреждение в панели создания, если интервал пересекается с существующими бронированиями.
+- **Плавающая панель создания**: Удобное превью выбранных столов, времени, зоны и предупреждения о конфликтах.
+- **Создание брони**: При нажатии клавиши «Создать» или «Создать с конфликтом» в консоль выводится ровно один структурированный объект (payload) с параметрами бронирования, а событие оптимистично добавляется в реактивное состояние приложения.
+
+## Запуск локально
+1. **Установка зависимостей**:
    ```bash
    npm install
    ```
-2. **Launch Development Server**:
+2. **Запуск сервера разработки**:
    ```bash
    npm run dev
    ```
-   The dev server starts on [http://localhost:3000](http://localhost:3000).
-3. **Type-Check & Build**:
+   Сервер разработки запустится на порту 3000 ([http://localhost:3000](http://localhost:3000)).
+3. **Проверка типов и сборка**:
    ```bash
    npm run lint
    ```
@@ -49,19 +52,19 @@ This implementation is custom-built on a lightweight, performant layout without 
    npm run build
    ```
 
-## Deployment
-[Live Application Preview link](https://ais-pre-ouv75w2hvgxszjebgngojq-125225337203.europe-west3.run.app)
+## Особенности реализации
+- **Алгоритм разделения дорожек**: Жадный расчет размещения резервов в колонке вычисляет ширину, сдвиг влево и приоритетность отображения "на лету", исключая дорогие и зависающие вычисления при движении курсора.
+- **Режим ручной отладки**: Специальный дебаг-переключатель в углу позволяет вручную выставлять время для тестирования положения линии текущего времени.
+- **Защищенный Pointer Capture**: Предотвращает внезапную потерю фокуса при перетаскивании выделения за пределы координатных контейнеров.
 
-## Implementation Notes
-- **Lanes sorting (Interval Coloring)**: Designed a programmatical greedy sorting layout that calculates column width cuts, left-coordinate offsets, and z-index ordering natively on-the-fly, avoiding any complex pointer moves calculations.
-- **Dynamic Time overrides**: Includes a debug manual override section (enabled in dev mode) allowing development mode testing of the tracker's timeline relative positions.
-- **Safe Pointer Capture**: Uses defensive boundary checks (such as `hasPointerCapture`) before releasing pointer grabs to avoid typical scroll container losses on complex layouts.
+## Работа с API
+Приложение запрашивает данные общих бронирований по дате и возвращает структурированный ответ, объединяющий данные столов, размещенных резервов и активных чеков, с разделением по статусам:
+- Статусы заказов: `New`, `Bill`, `Closed`, `Banquet`.
+- Статусы бронирования: `Живая очередь`, `Новая`, `Заявка`, `Открыт`, `Закрыт`.
 
-## API Notes and Possible Improvements
-For a production-grade backend API, I would consider introducing the following alterations based on standard floor management conditions:
-- **Date query parameter**: Support `GET /api/booking?date=YYYY-MM-DD` so that queries do not download unnecessary historical lists.
-- **Zone filtering**: Support query filters e.g. `?zones[]=1st_floor` to lessen structural rendering on thin clients.
-- **Server-provided restaurant time**: Return a `current_time` or offset in the payload header to align timezone current clock indicators with the precise database time clock synchronizes.
-- **Normalized event objects**: Grid layout layouts are simpler when the API returns unified, normalized event-shape schemas directly, saving processing cycles on mobile clients.
-- **Status metadata**: Distinguish system types with custom colors or flags sent directly from the server.
-- **Version checks (for caching)**: Provide an `updated_at` or entity tag header to support conditional requests for rapid page refreshes without massive body downloads.
+## Возможные улучшения API
+Для построения продакшн-решения рекомендуется внести следующие доработки в контракты бэкенда:
+1. **Параметризация даты транзакции**: Поддержка `GET /api/booking?date=YYYY-MM-DD` на уровне базы данных, чтобы избежать передачи всей истории в клиент.
+2. **Серверный фильтр по залам**: Возможность запрашивать отдельные зоны `?zones[]=1st` для экономии трафика.
+3. **Серверный таймштамп**: Передача точного серверного времени и смещения таймзоны в заголовках ответа для идеальной синхронизации линии текущего времени хостес.
+4. **Единый формат событий**: Возврат уже нормализованных событий времени вместо раздельных вложенных массивов `orders` и `reservations` для ускорения рендеринга.

@@ -20,6 +20,20 @@ const isCompact = computed(() => {
   return props.event.heightPx < 44;
 });
 
+const ORDER_STATUS_LABELS: Record<string, string> = {
+  New: 'Новый заказ',
+  Bill: 'Счёт',
+  Closed: 'Закрыт',
+  Banquet: 'Банкет'
+};
+
+const displayStatus = computed(() => {
+  if (props.event.type === 'order') {
+    return ORDER_STATUS_LABELS[props.event.status] || props.event.status;
+  }
+  return props.event.status;
+});
+
 
 // Style configurations depending on status/types
 const themeColors = computed(() => {
@@ -170,7 +184,7 @@ function formatDisplayTime(val: string): string {
               'text-[7.5px] font-bold px-1 py-0 rounded uppercase tracking-wider truncate border leading-none shrink-0'
             ]"
           >
-            {{ event.status }}
+            {{ displayStatus }}
           </span>
           <span :class="[theme === 'light' ? 'text-slate-600' : 'text-slate-300', 'text-[8px] font-mono leading-none truncate font-bold shrink-0']">
             {{ formatDisplayTime(event.startTime) }}
@@ -188,7 +202,7 @@ function formatDisplayTime(val: string): string {
               'text-[8px] font-bold px-1 py-0.5 rounded uppercase tracking-wider truncate border leading-none shrink-0'
             ]"
           >
-            {{ event.status }}
+            {{ displayStatus }}
           </span>
           <!-- Time Range -->
           <span :class="[theme === 'light' ? 'text-slate-500' : 'text-slate-400', 'text-[9px] font-mono font-semibold shrink-0']">
@@ -231,7 +245,7 @@ function formatDisplayTime(val: string): string {
 
       <div class="flex items-center justify-between gap-2">
         <span class="text-[9px] uppercase tracking-wider font-extrabold text-slate-400">
-          {{ event.type === 'reservation' ? 'Резерв' : 'Заказ' }}
+          {{ event.type === 'reservation' ? 'Бронирование' : 'Заказ' }}
         </span>
         <span 
           :class="[
@@ -239,12 +253,12 @@ function formatDisplayTime(val: string): string {
             'text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded font-mono border'
           ]"
         >
-          {{ event.status }}
+          {{ displayStatus }}
         </span>
       </div>
 
       <h5 :class="[theme === 'light' ? 'text-slate-900' : 'text-white', 'text-sm font-extrabold mt-2 tracking-tight leading-snug']">
-        {{ event.type === 'reservation' ? event.name : `Заказ стола №${event.originalId}` }}
+        {{ event.type === 'reservation' ? event.name : (event.status === 'Banquet' ? `Банкет (Стол №${event.originalId})` : `Заказ стола №${event.originalId}`) }}
       </h5>
 
       <div class="space-y-2 mt-2.5 pt-2.5 border-t border-slate-700/20 text-[10px] text-gray-400 font-mono">
