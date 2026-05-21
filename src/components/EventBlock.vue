@@ -155,7 +155,7 @@ function formatDisplayTime(val: string): string {
         : 'border-zinc-800 border-r border-t border-b hover:bg-zinc-800',
       isCurrentlyHovered ? 'shadow-lg scale-[1.01]' : 'shadow-none',
       isCompact ? 'px-1 py-0.5' : 'px-2 py-1.5',
-      'absolute border-l-[3px] rounded-r-md flex flex-col justify-between select-none cursor-pointer overflow-hidden transition-all duration-150'
+      'event-block absolute border-l-[3px] rounded-r-md flex flex-col justify-between select-none cursor-pointer overflow-hidden transition-all duration-150'
     ]"
   >
     <!-- Normal minimal card layout -->

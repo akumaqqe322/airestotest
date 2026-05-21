@@ -172,8 +172,8 @@ export function layoutEventsForColumn(
     const isOverlapped = totalCollisions.length > 0;
     const overlapCount = totalCollisions.length;
 
-    // Horizontally offset by 8px per lane and shrink width respectively
-    const offset = placed.lane * 8;
+    // Horizontally offset by 6px per lane and shrink width respectively
+    const offset = placed.lane * 6;
     const leftPx = offset;
     const widthPx = isOverlapped 
       ? Math.max(50, columnWidth - offset - 6) 
