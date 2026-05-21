@@ -19,6 +19,10 @@ const props = withDefaults(defineProps<{
   selection: null
 });
 
+const emit = defineEmits<{
+  (e: 'edit-event', payload: { event: any; tableId: string }): void;
+}>();
+
 const columnRef = ref<HTMLDivElement | null>(null);
 
 // Calculate total height of the column container based on operating bounds
@@ -92,7 +96,8 @@ const positionedEvents = computed(() => {
       v-for="positioned in positionedEvents"
       :key="positioned.id"
       :event="positioned"
-      @click.stop
+      :theme="theme"
+      @click.stop="emit('edit-event', { event: positioned, tableId: table.id })"
     />
 
     <!-- Render selection highlight slot placeholder (Bonus feature) -->

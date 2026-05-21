@@ -5,6 +5,7 @@ import TableHeader from './TableHeader.vue';
 import TimeAxis from './TimeAxis.vue';
 import TableColumn from './TableColumn.vue';
 import CurrentTimeLine from './CurrentTimeLine.vue';
+import { TIMELINE_PIXELS_PER_MINUTE, TIMELINE_COLUMN_WIDTH } from '../constants/timeline';
 
 const props = withDefaults(defineProps<{
   tables: NormalizedTable[];
@@ -17,8 +18,8 @@ const props = withDefaults(defineProps<{
   theme?: 'dark' | 'light';
   selection?: TimelineSelection | null;
 }>(), {
-  pixelsPerMinute: 2, // 2px per minute means 60px for 30 minutes
-  columnWidth: 190,   // Width of each table column track
+  pixelsPerMinute: TIMELINE_PIXELS_PER_MINUTE,
+  columnWidth: TIMELINE_COLUMN_WIDTH,
   theme: 'dark',
   selection: null
 });
@@ -28,6 +29,7 @@ const emit = defineEmits<{
   (e: 'pointermove', event: PointerEvent): void;
   (e: 'pointerup', event: PointerEvent): void;
   (e: 'pointercancel', event: PointerEvent): void;
+  (e: 'edit-event', payload: { event: any; tableId: string }): void;
 }>();
 
 const timelineScrollContainer = ref<HTMLDivElement | null>(null);
@@ -96,6 +98,7 @@ const timelineScrollContainer = ref<HTMLDivElement | null>(null);
             :column-width="columnWidth"
             :theme="theme"
             :selection="selection"
+            @edit-event="(payload) => emit('edit-event', payload)"
           />
         </div>
       </div>

@@ -5,12 +5,14 @@ import { getBookingData } from './services/bookingApi';
 import { normalizeTables } from './utils/timeline';
 import { getCurrentTimeInTimezone } from './utils/time';
 import { useTimelineSelection } from './composables/useTimelineSelection';
+import { TIMELINE_PIXELS_PER_MINUTE, TIMELINE_COLUMN_WIDTH } from './constants/timeline';
 
 // Components
 import AppHeader from './components/AppHeader.vue';
 import DateSwitcher from './components/DateSwitcher.vue';
 import ZoneFilter from './components/ZoneFilter.vue';
 import BookingTimeline from './components/BookingTimeline.vue';
+import ReservationEditModal from './components/ReservationEditModal.vue';
 
 // Lucide Icons
 import { AlertCircle, Clock } from 'lucide-vue-next';
@@ -81,6 +83,16 @@ watch(selectedDay, (newDay) => {
   loadData(newDay);
 });
 
+// Reset selection when selected zones changes
+watch(selectedZones, () => {
+  resetSelection();
+}, { deep: true });
+
+// Reset selection when filtered tables length changes
+watch(() => filteredTables.value.length, () => {
+  resetSelection();
+});
+
 onMounted(async () => {
   await loadData(selectedDay.value);
   
@@ -142,8 +154,8 @@ const {
   openingTimeRef,
   closingTimeRef,
   selectedDay,
-  2.3, // pixelsPerMinute matching BookingTimeline.vue
-  190  // columnWidth matching BookingTimeline.vue
+  TIMELINE_PIXELS_PER_MINUTE,
+  TIMELINE_COLUMN_WIDTH
 );
 
 // Create slot action callback and log EXACTLY one consolidated object
@@ -163,27 +175,107 @@ function handleCreateBooking() {
     hasConflicts: sel.hasConflicts
   });
   
-  // Optimistic local update adding a neutral "Новая бронь" descriptor to all selected tables
-  for (const tableId of sel.tableIds) {
-    const targetTable = bookingData.value.tables.find(t => t.id === tableId);
+  // Optimistic local update adding a neutral "Новая бронь" descriptor to all selected tables with stable unique IDs
+  const baseId = Date.now();
+  sel.tableIds.forEach((tableId, index) => {
+    const targetTable = bookingData.value?.tables.find(t => t.id === tableId);
     if (targetTable) {
       targetTable.reservations.push({
-        id: Date.now() + Math.floor(Math.random() * 1000),
+        id: baseId + index,
         name_for_reservation: "Новая бронь",
         num_people: targetTable.capacity || 4,
-        phone_number: "+7 (999) 555-44-33",
+        phone_number: "",
         status: "Новая",
         seating_time: `${sel.selectedDate}T${sel.startTime}:00.000000+10:00`,
         end_time: `${sel.selectedDate}T${sel.endTime}:00.000000+10:00`
       });
     }
-  }
+  });
   
   // Refresh layout
   bookingData.value = { ...bookingData.value };
   
   // Dismiss selection
   resetSelection();
+}
+
+// Editing state
+const isEditModalOpen = ref(false);
+const selectedEventToEdit = ref<any>(null);
+const selectedOriginalTableId = ref('');
+
+function handleEditEvent({ event, tableId }: { event: any; tableId: string }) {
+  if (event.type !== 'reservation') return; // Only reservations are editable!
+  selectedEventToEdit.value = event;
+  selectedOriginalTableId.value = tableId;
+  isEditModalOpen.value = true;
+}
+
+function buildTimestamp(baseIso: string, newTimeStr: string, fallbackDate: string): string {
+  if (baseIso && baseIso.includes('T')) {
+    const parts = baseIso.split('T');
+    const datePart = parts[0];
+    const afterTime = parts[1];
+    const tzMatch = afterTime.match(/(?:\d{2}:\d{2}:\d{2}(?:\.\d+)?)?([+-]\d{2}:\d{2}|Z)$/);
+    const tzOffset = tzMatch ? tzMatch[1] : '+10:00';
+    return `${datePart}T${newTimeStr}:00.000000${tzOffset}`;
+  }
+  return `${fallbackDate}T${newTimeStr}:00.000050+10:00`;
+}
+
+function handleSaveReservation({ originalEventId, originalTableId, updated }: { originalEventId: string | number; originalTableId: string; updated: any }) {
+  if (!bookingData.value) return;
+
+  const sourceTable = bookingData.value.tables.find(t => t.id === originalTableId);
+  if (!sourceTable) return;
+
+  const resIndex = sourceTable.reservations.findIndex(r => r.id === originalEventId);
+  if (resIndex === -1) return;
+
+  const reservation = sourceTable.reservations[resIndex];
+
+  // Update details
+  reservation.name_for_reservation = updated.name;
+  reservation.phone_number = updated.phone;
+  reservation.num_people = updated.numPeople;
+  reservation.status = updated.status;
+  reservation.seating_time = buildTimestamp(reservation.seating_time, updated.startTime, selectedDay.value);
+  reservation.end_time = buildTimestamp(reservation.end_time, updated.endTime, selectedDay.value);
+
+  // If tableId changed, relocate the reservation
+  if (updated.tableId !== originalTableId) {
+    sourceTable.reservations.splice(resIndex, 1);
+    const targetTable = bookingData.value.tables.find(t => t.id === updated.tableId);
+    if (targetTable) {
+      targetTable.reservations.push(reservation);
+    }
+  }
+
+  // Refresh reactive tree
+  bookingData.value = { ...bookingData.value };
+
+  // Dismiss modal
+  isEditModalOpen.value = false;
+  selectedEventToEdit.value = null;
+}
+
+function handleDeleteReservation({ eventId, tableId }: { eventId: string | number; tableId: string }) {
+  if (!bookingData.value) return;
+
+  const targetTable = bookingData.value.tables.find(t => t.id === tableId);
+  if (!targetTable) return;
+
+  const resIndex = targetTable.reservations.findIndex(r => r.id === eventId);
+  if (resIndex !== -1) {
+    targetTable.reservations.splice(resIndex, 1);
+  }
+
+  // Refresh reactive tree
+  bookingData.value = { ...bookingData.value };
+
+  // Dismiss modal
+  isEditModalOpen.value = false;
+  selectedEventToEdit.value = null;
 }
 </script>
 
@@ -330,13 +422,14 @@ function handleCreateBooking() {
         :closing-time="bookingData.restaurant.closing_time"
         :timezone="bookingData.restaurant.timezone"
         :current-time="effectiveCurrentTime"
-        :pixels-per-minute="2.3"
+        :pixels-per-minute="TIMELINE_PIXELS_PER_MINUTE"
         :theme="theme"
         :selection="activeSelection"
         @pointerdown="handlePointerDown"
         @pointermove="handlePointerMove"
         @pointerup="handlePointerUp"
         @pointercancel="handlePointerCancel"
+        @edit-event="handleEditEvent"
       />
 
     </main>
@@ -434,10 +527,26 @@ function handleCreateBooking() {
             'flex-1 sm:flex-none font-extrabold px-5 py-2.5 rounded-xl text-xs shadow-lg active:scale-98 transition-all flex items-center justify-center gap-1.5 cursor-pointer'
           ]"
         >
-          Создать
+          {{ activeSelection.hasConflicts ? 'Создать с конфликтом' : 'Создать' }}
         </button>
       </div>
     </div>
+
+    <!-- Reservation Edit Modal component -->
+    <ReservationEditModal
+      v-if="bookingData"
+      :is-open="isEditModalOpen"
+      :event="selectedEventToEdit"
+      :table-id="selectedOriginalTableId"
+      :tables="bookingData.tables"
+      :opening-time="bookingData.restaurant.opening_time"
+      :closing-time="bookingData.restaurant.closing_time"
+      :selected-date="selectedDay"
+      :theme="theme"
+      @close="isEditModalOpen = false; selectedEventToEdit = null"
+      @save="handleSaveReservation"
+      @delete="handleDeleteReservation"
+    />
 
   </div>
 </template>

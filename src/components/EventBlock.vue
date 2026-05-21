@@ -1,104 +1,119 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import type { PositionedTimelineEvent } from '../types/booking';
-import { Clock, User, Phone } from 'lucide-vue-next';
+import { Clock, User, Phone, Layers, Bookmark } from 'lucide-vue-next';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   event: PositionedTimelineEvent;
+  theme?: 'dark' | 'light';
+}>(), {
+  theme: 'dark'
+});
+
+const emit = defineEmits<{
+  (e: 'click', event: MouseEvent): void;
 }>();
 
 const isCurrentlyHovered = ref(false);
 
-const showDetails = computed(() => {
-  return !props.event.compact || isCurrentlyHovered.value;
-});
-
 // Style configurations depending on status/types
 const themeColors = computed(() => {
   const s = props.event.status;
+  const isDark = props.theme === 'dark';
   
   if (props.event.type === 'order') {
     switch (s) {
       case 'New':
         return {
-          bg: 'bg-emerald-500/10 border-emerald-500/35 hover:bg-emerald-500/20 text-emerald-400',
-          bgIndicator: 'bg-emerald-400Shadow',
-          textClass: 'text-emerald-400',
-          borderClass: 'border-emerald-500/40'
+          bg: isDark ? 'bg-zinc-900' : 'bg-slate-50',
+          borderL: 'border-l-cyan-500',
+          badgeBg: 'bg-cyan-500/10 text-cyan-500 border-cyan-500/20',
+          textClass: 'text-cyan-400',
+          accentBorder: 'border-cyan-500/30'
         };
       case 'Bill':
         return {
-          bg: 'bg-indigo-500/10 border-indigo-500/35 hover:bg-indigo-500/20 text-indigo-400',
-          bgIndicator: 'bg-indigo-400',
-          textClass: 'text-indigo-400',
-          borderClass: 'border-indigo-500/30'
+          bg: isDark ? 'bg-zinc-900' : 'bg-slate-50',
+          borderL: 'border-l-amber-500',
+          badgeBg: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
+          textClass: 'text-amber-400',
+          accentBorder: 'border-amber-500/30'
         };
       case 'Closed':
         return {
-          bg: 'bg-gray-500/10 border-gray-500/25 hover:bg-gray-500/15 text-gray-400',
-          bgIndicator: 'bg-gray-400',
-          textClass: 'text-gray-400',
-          borderClass: 'border-gray-500/20'
+          bg: isDark ? 'bg-zinc-900' : 'bg-slate-100',
+          borderL: 'border-l-slate-400',
+          badgeBg: 'bg-slate-400/10 text-slate-400 border-slate-400/20',
+          textClass: 'text-slate-400',
+          accentBorder: 'border-slate-500/20'
         };
       case 'Banquet':
         return {
-          bg: 'bg-purple-500/10 border-purple-500/35 hover:bg-purple-500/20 text-purple-400',
-          bgIndicator: 'bg-purple-400',
+          bg: isDark ? 'bg-zinc-900' : 'bg-slate-50',
+          borderL: 'border-l-purple-500',
+          badgeBg: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
           textClass: 'text-purple-400',
-          borderClass: 'border-purple-500/30'
+          accentBorder: 'border-purple-500/30'
         };
       default:
         return {
-          bg: 'bg-gray-500/10 border-gray-500/30 hover:bg-gray-500/20 text-gray-400',
-          bgIndicator: 'bg-gray-400',
-          textClass: 'text-gray-400',
-          borderClass: 'border-gray-500/30'
+          bg: isDark ? 'bg-zinc-900' : 'bg-slate-50',
+          borderL: 'border-l-slate-500',
+          badgeBg: 'bg-slate-500/10 text-slate-500 border-slate-500/20',
+          textClass: 'text-slate-400',
+          accentBorder: 'border-slate-500/20'
         };
     }
   } else {
     // Reservations
     switch (s) {
+      case 'Живая очередь':
+        return {
+          bg: isDark ? 'bg-zinc-900' : 'bg-slate-50',
+          borderL: 'border-l-blue-500',
+          badgeBg: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+          textClass: 'text-blue-400',
+          accentBorder: 'border-blue-500/30'
+        };
       case 'Новая':
         return {
-          bg: 'bg-amber-500/12 border-amber-500/40 hover:bg-amber-500/22 text-amber-400',
-          bgIndicator: 'bg-amber-400',
-          textClass: 'text-amber-400',
-          borderClass: 'border-amber-500/40'
+          bg: isDark ? 'bg-zinc-900' : 'bg-slate-50',
+          borderL: 'border-l-orange-500',
+          badgeBg: 'bg-orange-500/10 text-orange-500 border-orange-500/20',
+          textClass: 'text-orange-400',
+          accentBorder: 'border-orange-500/30'
         };
       case 'Заявка':
         return {
-          bg: 'bg-sky-500/10 border-sky-500/35 hover:bg-sky-500/20 text-sky-400',
-          bgIndicator: 'bg-sky-400',
-          textClass: 'text-sky-400',
-          borderClass: 'border-sky-500/30'
-        };
-      case 'Живая очередь':
-        return {
-          bg: 'bg-orange-500/10 border-orange-500/35 hover:bg-orange-500/20 text-orange-400',
-          bgIndicator: 'bg-orange-400',
-          textClass: 'text-orange-400',
-          borderClass: 'border-orange-500/30'
+          bg: isDark ? 'bg-[#151720]' : 'bg-slate-50',
+          borderL: 'border-l-yellow-500',
+          badgeBg: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20',
+          textClass: 'text-yellow-400',
+          accentBorder: 'border-yellow-500/30'
         };
       case 'Открыт':
         return {
-          bg: 'bg-emerald-500/10 border-emerald-500/35 hover:bg-emerald-500/20 text-emerald-400',
-          bgIndicator: 'bg-emerald-400',
+          bg: isDark ? 'bg-zinc-900' : 'bg-slate-50',
+          borderL: 'border-l-emerald-500',
+          badgeBg: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
           textClass: 'text-emerald-400',
-          borderClass: 'border-[#2d3139]'
+          accentBorder: 'border-emerald-500/30'
         };
       case 'Закрыт':
         return {
-          bg: 'bg-gray-500/12 border-gray-500/25 hover:bg-gray-500/18 text-gray-400',
-          bgIndicator: 'bg-gray-500',
-          textClass: 'text-gray-500',
-          borderClass: 'border-gray-500/20'
+          bg: isDark ? 'bg-zinc-900' : 'bg-slate-100',
+          borderL: 'border-l-slate-400',
+          badgeBg: 'bg-slate-400/10 text-slate-405 border-slate-400/20',
+          textClass: 'text-slate-400',
+          accentBorder: 'border-slate-500/20'
         };
       default:
         return {
-          bg: 'bg-gray-500/10 border-gray-500/30 hover:bg-gray-500/20 text-gray-400',
-          bgIndicator: 'bg-gray-450',
-          textClass: 'text-gray-400',
-          borderClass: 'border-gray-500/30'
+          bg: isDark ? 'bg-zinc-900' : 'bg-slate-50',
+          borderL: 'border-l-slate-500',
+          badgeBg: 'bg-slate-500/10 text-slate-500 border-slate-500/20',
+          textClass: 'text-slate-550',
+          accentBorder: 'border-slate-500/20'
         };
     }
   }
@@ -126,58 +141,107 @@ function formatDisplayTime(val: string): string {
     }"
     @mouseenter="isCurrentlyHovered = true"
     @mouseleave="isCurrentlyHovered = false"
-    class="absolute rounded-lg border px-2.5 py-1.5 flex flex-col justify-between overflow-hidden shadow-md transition-all duration-150 backdrop-blur-md select-none hover:scale-[1.01] cursor-pointer group hover:bg-[#151720]/95 hover:border-amber-500/80"
-    :class="[themeColors.bg, isCurrentlyHovered ? 'shadow-lg shadow-black/50 border-amber-500/85 ring-1 ring-amber-500/10' : '']"
+    @click="emit('click', $event)"
+    :class="[
+      themeColors.bg,
+      themeColors.borderL,
+      theme === 'light' 
+        ? 'border-slate-200 border-r border-t border-b hover:bg-slate-100/50' 
+        : 'border-zinc-800 border-r border-t border-b hover:bg-zinc-800/80',
+      isCurrentlyHovered ? 'shadow-xl scale-[1.01] border-zinc-500/40' : 'shadow-sm',
+      'absolute border-l-[3px] rounded-r-md px-2 py-1.5 flex flex-col justify-between select-none cursor-pointer overflow-hidden transition-all duration-150'
+    ]"
   >
-    <!-- Card Top Header Row -->
-    <div class="flex items-start justify-between gap-1 min-w-0">
-      <h4 class="text-[11px] font-bold tracking-tight text-white line-clamp-1 truncate min-w-0 pr-1">
-        {{ event.title }}
-      </h4>
-      <div 
-        class="w-1.5 h-1.5 rounded-full shrink-0 mt-1" 
-        :class="themeColors.bgIndicator" 
-        :title="event.status"
-      ></div>
-    </div>
-
-    <!-- Details block (Responsive to compact & hover restructurings) -->
-    <div v-if="showDetails" class="flex flex-col gap-0.5 mt-1 text-[10px] text-gray-400 leading-tight">
-      <div class="flex items-center gap-1">
-        <Clock class="w-2.5 h-2.5 shrink-0 text-gray-500 opacity-80" />
-        <span class="font-semibold tracking-wide">
-          {{ formatDisplayTime(event.startTime) }} - {{ formatDisplayTime(event.endTime) }}
-        </span>
-      </div>
+    <!-- Normal minimal card layout -->
+    <div class="flex flex-col h-full justify-between min-w-0">
       
-      <!-- Show guests and phone numbers on expand / hover -->
-      <div v-if="event.numPeople" class="flex items-center gap-1 mt-0.5">
-        <User class="w-2.5 h-2.5 shrink-0 text-gray-500 opacity-80" />
-        <span class="truncate">
-          {{ event.numPeople }} чел
+      <!-- Top: Status + Time Range -->
+      <div class="flex items-center justify-between gap-1 min-w-0">
+        <!-- Status Label -->
+        <span 
+          :class="[
+            themeColors.badgeBg,
+            'text-[8.5px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider truncate border leading-none shrink-0'
+          ]"
+        >
+          {{ event.status }}
+        </span>
+        <!-- Time Range -->
+        <span :class="[theme === 'light' ? 'text-slate-500' : 'text-slate-400', 'text-[9.5px] font-mono font-semibold shrink-0']">
+          {{ formatDisplayTime(event.startTime) }}
         </span>
       </div>
 
-      <div v-if="event.phoneNumber && isCurrentlyHovered" class="flex items-center gap-1 mt-0.5 opacity-85">
-        <span class="text-[9px] text-amber-500 font-mono tracking-tight select-all truncate">
-          {{ event.phoneNumber }}
+      <!-- Center: Guest Name / Order tag -->
+      <div class="my-auto min-w-0 pr-1">
+        <h4 :class="[theme === 'light' ? 'text-slate-900' : 'text-white', 'text-[11px] font-extrabold tracking-tight truncate leading-tight']">
+          {{ event.type === 'reservation' ? event.name : (event.status === 'Banquet' ? 'Банкет' : 'Заказ стола') }}
+        </h4>
+      </div>
+
+      <!-- Bottom: Guest Count if space allows -->
+      <div class="flex items-center justify-between text-[9px] text-slate-400 mt-0.5 leading-none font-mono">
+        <span v-if="event.numPeople && event.heightPx >= 50" class="flex items-center gap-1">
+          <User class="w-2.5 h-2.5 shrink-0 opacity-70" />
+          <span>{{ event.numPeople }} чел</span>
+        </span>
+        <span class="ml-auto opacity-60">
+          {{ formatDisplayTime(event.endTime) }}
         </span>
       </div>
+
     </div>
 
-    <!-- Compressed visual indicators for micro-tall booking intervals -->
-    <div v-else class="text-[9px] text-gray-500 font-mono flex items-center gap-1 mt-0.5 leading-none shrink-0">
-      <span class="font-medium text-gray-400">{{ formatDisplayTime(event.startTime) }}</span>
-      <span v-if="event.numPeople" class="text-amber-500/80 font-bold">• {{ event.numPeople }}ч</span>
-    </div>
-
-    <!-- Status subtitle tag (Only for fully expanded large blocks) -->
+    <!-- Hover Details Tooltip Popover -->
     <div 
-      v-if="event.heightPx >= 70 && showDetails" 
-      class="text-[9px] font-semibold tracking-wider mt-1.5 pt-1.5 border-t border-white/5 opacity-80 uppercase leading-none truncate"
-      :class="themeColors.textClass"
+      v-if="isCurrentlyHovered"
+      :class="[
+        theme === 'light' ? 'bg-white border-slate-300 text-slate-800 shadow-xl' : 'bg-[#181a22] border-zinc-700 text-slate-100 shadow-2xl',
+        'absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-64 rounded-xl border p-3.5 z-[100] cursor-default text-left select-text animate-fade-in'
+      ]"
+      @click.stop
     >
-      {{ event.status }}
+      <!-- Small arrow indicator -->
+      <div :class="[theme === 'light' ? 'border-t-white' : 'border-t-[#181a22]', 'absolute top-full left-1/2 -translate-x-1/2 border-x-8 border-x-transparent border-t-8']"></div>
+
+      <div class="flex items-center justify-between gap-2">
+        <span class="text-[9px] uppercase tracking-wider font-extrabold text-slate-400">
+          {{ event.type === 'reservation' ? 'Резерв' : 'Заказ' }}
+        </span>
+        <span 
+          :class="[
+            themeColors.badgeBg,
+            'text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded font-mono border'
+          ]"
+        >
+          {{ event.status }}
+        </span>
+      </div>
+
+      <h5 :class="[theme === 'light' ? 'text-slate-900' : 'text-white', 'text-sm font-extrabold mt-2 tracking-tight leading-snug']">
+        {{ event.type === 'reservation' ? event.name : `Заказ стола №${event.originalId}` }}
+      </h5>
+
+      <div class="space-y-2 mt-2.5 pt-2.5 border-t border-slate-700/20 text-[10px] text-gray-400 font-mono">
+        <div class="flex items-center gap-2">
+          <Clock class="w-3.5 h-3.5 text-gray-400 shrink-0" />
+          <span>{{ formatDisplayTime(event.startTime) }} - {{ formatDisplayTime(event.endTime) }}</span>
+        </div>
+        <div v-if="event.numPeople" class="flex items-center gap-2">
+          <User class="w-3.5 h-3.5 text-gray-400 shrink-0" />
+          <span>Гости: <strong :class="theme === 'light' ? 'text-slate-800' : 'text-white'">{{ event.numPeople }} чел</strong></span>
+        </div>
+        <div v-if="event.phoneNumber" class="flex items-center gap-2">
+          <Phone class="w-3.5 h-3.5 text-gray-400 shrink-0" />
+          <span>Тел: <strong :class="theme === 'light' ? 'text-slate-800' : 'text-white'">{{ event.phoneNumber }}</strong></span>
+        </div>
+        <div class="flex items-center gap-2">
+          <Layers class="w-3.5 h-3.5 text-gray-400 shrink-0" />
+          <span>Тип: {{ event.type === 'reservation' ? 'Бронирование' : 'Заказ' }}</span>
+        </div>
+      </div>
     </div>
+
   </div>
 </template>
+

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { Users } from 'lucide-vue-next';
 import type { NormalizedTable } from '../types/booking';
 
 withDefaults(defineProps<{
@@ -15,12 +14,12 @@ withDefaults(defineProps<{
   <div 
     :class="[
       theme === 'light' ? 'bg-slate-100 border-slate-200' : 'bg-[#14161d] border-[#2d3139]',
-      'flex border-b select-none shrink-0 sticky top-0 z-30 transition-colors'
+      'flex border-b border-zinc-800 select-none shrink-0 sticky top-0 z-30 transition-colors'
     ]"
   >
     <!-- Extra spacing offset matching the left TimeAxis (70px) -->
     <div 
-      :class="[theme === 'light' ? 'bg-slate-100' : 'bg-[#14161d]', 'shrink-0']" 
+      :class="[theme === 'light' ? 'bg-slate-100 border-slate-200' : 'bg-[#14161d] border-[#2d3139]', 'shrink-0 sticky left-0 z-40 border-r']" 
       style="width: 70px;"
     ></div>
 
@@ -32,21 +31,17 @@ withDefaults(defineProps<{
         :style="{ width: `${columnWidth}px` }"
         :class="[
           theme === 'light' 
-            ? 'border-slate-250 bg-slate-100 hover:bg-slate-200/50' 
+            ? 'border-slate-200 bg-slate-100 hover:bg-slate-200/50' 
             : 'border-[#2d3139] bg-[#14161d] hover:bg-[#1b1e26]',
-          'shrink-0 border-r px-4 py-3 flex flex-col justify-center transition-all'
+          'shrink-0 border-r px-4 py-2 flex flex-col justify-center transition-all select-none'
         ]"
       >
-        <div class="flex items-center justify-between">
-          <span :class="[theme === 'light' ? 'text-slate-800' : 'text-gray-200', 'text-xs font-bold tracking-wide truncate']">
-            {{ table.number }}
-          </span>
-          <span class="text-[10px] text-amber-500 font-semibold bg-amber-500/10 px-1.5 py-0.5 rounded flex items-center gap-1 shrink-0">
-            <Users class="w-2.5 h-2.5" />
-            {{ table.capacity }}
-          </span>
+        <div :class="[theme === 'light' ? 'text-slate-900 font-extrabold' : 'text-slate-100 font-black', 'text-sm tracking-tight leading-none']">
+          #{{ table.number }}
         </div>
-        <div class="text-[10px] text-slate-450 mt-1 flex items-center justify-between shrink-0">
+        <div class="text-[10px] text-slate-400 mt-1 flex flex-wrap items-center gap-1.5 leading-none shrink-0 font-medium font-sans">
+          <span>{{ table.capacity }} чел</span>
+          <span class="text-slate-500">•</span>
           <span class="truncate">{{ table.zone }}</span>
         </div>
       </div>

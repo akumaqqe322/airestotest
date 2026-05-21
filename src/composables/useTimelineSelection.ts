@@ -1,14 +1,15 @@
 import { ref, computed, type Ref } from 'vue';
 import type { NormalizedTable, TableZone, TimelineSelection } from '../types/booking';
 import { timeToMinutes, minutesToTime, clamp } from '../utils/time';
+import { TIMELINE_PIXELS_PER_MINUTE, TIMELINE_COLUMN_WIDTH, SELECTION_SNAP_MINUTES } from '../constants/timeline';
 
 export function useTimelineSelection(
   tables: Ref<NormalizedTable[]>,
   openingTime: Ref<string>,
   closingTime: Ref<string>,
   selectedDate: Ref<string>,
-  pixelsPerMinute: number,
-  columnWidth: number
+  pixelsPerMinute: number = TIMELINE_PIXELS_PER_MINUTE,
+  columnWidth: number = TIMELINE_COLUMN_WIDTH
 ) {
   const selectionStart = ref<{ colIndex: number; mins: number } | null>(null);
   const selectionCurrent = ref<{ colIndex: number; mins: number } | null>(null);
@@ -36,20 +37,20 @@ export function useTimelineSelection(
     const rawStartMins = Math.min(selectionStart.value.mins, selectionCurrent.value.mins);
     const rawEndMins = Math.max(selectionStart.value.mins, selectionCurrent.value.mins);
 
-    // Snap to 15-minute intervals
-    let startMins = Math.round(rawStartMins / 15) * 15;
-    let endMins = Math.round(rawEndMins / 15) * 15;
+    // Snap to standard intervals
+    let startMins = Math.round(rawStartMins / SELECTION_SNAP_MINUTES) * SELECTION_SNAP_MINUTES;
+    let endMins = Math.round(rawEndMins / SELECTION_SNAP_MINUTES) * SELECTION_SNAP_MINUTES;
 
     // Clamp inside restaurant boundaries
     startMins = clamp(startMins, opMins, clMins);
     endMins = clamp(endMins, opMins, clMins);
 
-    // Enforce a minimum interval representation of 15 minutes to avoid zero-height overlays
+    // Enforce a minimum interval representation to avoid zero-height overlays
     if (endMins <= startMins) {
-      if (startMins + 15 <= clMins) {
-        endMins = startMins + 15;
-      } else if (endMins - 15 >= opMins) {
-        startMins = endMins - 15;
+      if (startMins + SELECTION_SNAP_MINUTES <= clMins) {
+        endMins = startMins + SELECTION_SNAP_MINUTES;
+      } else if (endMins - SELECTION_SNAP_MINUTES >= opMins) {
+        startMins = endMins - SELECTION_SNAP_MINUTES;
       }
     }
 
@@ -166,7 +167,9 @@ export function useTimelineSelection(
     if (!isDragging.value) return;
 
     const container = e.currentTarget as HTMLElement;
-    container.releasePointerCapture(e.pointerId);
+    if (container && typeof container.hasPointerCapture === 'function' && container.hasPointerCapture(e.pointerId)) {
+      container.releasePointerCapture(e.pointerId);
+    }
     isDragging.value = false;
   };
 
@@ -174,7 +177,9 @@ export function useTimelineSelection(
     if (!isDragging.value) return;
 
     const container = e.currentTarget as HTMLElement;
-    container.releasePointerCapture(e.pointerId);
+    if (container && typeof container.hasPointerCapture === 'function' && container.hasPointerCapture(e.pointerId)) {
+      container.releasePointerCapture(e.pointerId);
+    }
     resetSelection();
   };
 

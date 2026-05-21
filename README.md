@@ -1,90 +1,67 @@
-# Airesto Restaurant Booking Timeline
+# Restaurant Booking Timeline (Airesto)
 
-An advanced, high-performance interactive restaurant booking timeline for **Ark Studio / Airesto**, built in Vue 3 and TypeScript. It features a customizable scheduling grid, collision lanes, and a fully reactive dark/light visual theme.
+## Overview
+An interactive restaurant booking timeline designed for floor managers to monitor, search, and arrange table reservations and orders in real time. It represents tables as horizontally scrollable column tracks, and time as a vertical axis mapping out the restaurant's operational hours.
 
----
+This implementation is custom-built on a lightweight, performant layout without relying on heavy external scheduler, calendar, or table grid libraries. It remains smooth with large datasets and active interactions.
 
-## 🎨 Design Concept: Table Column Grid Timeline
+## Tech Stack
+- **Framework**: Vue 3 (Composition API with Single File Components)
+- **Build Tool**: Vite
+- **Language**: TypeScript (with strict types)
+- **Styling**: Tailwind CSS (using CSS variable themes)
+- **Icons**: Lucide Icons
+- **Libraries**: No third-party calendar or scheduler grids are used.
 
-Designed with a focus on ease of floor management:
-* **Table Track Columns**: Each table displays as a separate column track.
-* **Vertical Time Dimension**: Time flows downward, mimicking standard booking charts.
-* **Dynamic Slot Layout**: Events (Reservations and Active Orders) are placed as absolute elements with precise calculated pixels corresponding to the restaurant timezone and opening/closing minutes.
-* **High-Density Cascade Slots**: If multiple reservations overlap on the same table, the interface assigns them to adjacent mathematical lanes, offsetting elements horizontally (cascading look) to preserve legibility without breaking alignment.
+## Implemented Features
+- **Clean Vue 3 Setup**: Completely pruned and cleaned from all React templates.
+- **Dynamic Date Switcher**: Shift dates and see corresponding mock data load dynamically.
+- **Multi-Zone Filter**: Multi-select table zones (`1 этаж`, `2 этаж`, `Банкетный зал`) with reactive, high-performance resizing.
+- **Timezone-Aware Current Time**: Displays and updates the current time localized to the restaurant's timezone ("Asia/Vladivostok") with a real-time current time indicator line.
+- **Sticky Column Headers & Time Axis**: Ensures column headers remain visible at the top, and the time coordinates remain sticky on the left during deep horizontal or vertical scrolls.
+- **All Event Statuses**: Renders both reservations and active checks/orders with distinct visual indicators based on their native status values.
+- **Interactive Hover States**: Highlights specific cards dynamically on hover, increasing their stacking context index and revealing secondary details (such as customer telephone numbers).
+- **Collision & Overlap Layout Engine**: Programmatically runs a fast layout routine to offset overlapping reservation blocks into adjacent column lanes, preventing text content from overlaying or colliding.
+- **Smart Compact Hiding**: Collapses card text density for small duration blocks or multiple overlaps to prevent layout overflows.
 
----
+## Additional Tasks Implemented
+- **Dual Visual Themes**: Support for Dark Mode and Light Mode, persisted in localStorage.
+- **Horizontal & Vertical Drag-Selection**: Staff can click and drag across multiple table tracks and time spans using Pointer Capture to easily claim a custom reservation slot. Snaps cleanly to 15-minute segments and clamps bounds inside operating hours.
+- **Live Overlaps & Conflict Warnings**: Instantly changes the visual color of the active selection area to crimson (with a warning text indicator in the drawer) if the selection overlaps with any existing bookings.
+- **Floating Slots Drawer**: Displays selected tables, timestamps, and zone coverage.
+- **Explicit Create Flow**: Clicking the "Создать" or "Создать с конфликтом" button issues exactly one consolidated console.log payload containing table numbers and conflict status parameters, and inserts bookings locally into the reactive app state.
 
-## 🛠️ Technological Stack
+## Local Setup
+1. **Install Dependencies**:
+   ```bash
+   npm install
+   ```
+2. **Launch Development Server**:
+   ```bash
+   npm run dev
+   ```
+   The dev server starts on [http://localhost:3000](http://localhost:3000).
+3. **Type-Check & Build**:
+   ```bash
+   npm run lint
+   ```
+   ```bash
+   npm run build
+   ```
 
-* **Front-end Environment**: Vue 3 (Composition API, `<script setup>`), Vite
-* **Programming Language**: TypeScript
-* **Styling Framework**: Tailwind CSS
-* **Icons**: Lucide Vue Next
-* **Dependencies**: Completely pruned of initial React/Express dependencies; utilizes vanilla CSS Variables for premium themes with very low memory overhead.
+## Deployment
+[Live Application Preview link](https://ais-pre-ouv75w2hvgxszjebgngojq-125225337203.europe-west3.run.app)
 
----
+## Implementation Notes
+- **Lanes sorting (Interval Coloring)**: Designed a programmatical greedy sorting layout that calculates column width cuts, left-coordinate offsets, and z-index ordering natively on-the-fly, avoiding any complex pointer moves calculations.
+- **Dynamic Time overrides**: Includes a debug manual override section (enabled in dev mode) allowing development mode testing of the tracker's timeline relative positions.
+- **Safe Pointer Capture**: Uses defensive boundary checks (such as `hasPointerCapture`) before releasing pointer grabs to avoid typical scroll container losses on complex layouts.
 
-## ✨ Implemented Core & Bonus Features
-
-### 1. Required Foundation (Core Items)
-- ✅ **Complete Vue 3 + Vite Cleanup**: Fully migrated from React template layers to Vue SFC format; completely stripped React variables and node modules.
-- ✅ **Zone Filter Toggles**: Support selecting single or multiple zones (`1 этаж`, `2 этаж`, `Банкетный зал`) dynamically. Handles empty states gracefully.
-- ✅ **Russian Date Switcher**: Lets staff shift dates, regenerating corresponding mock data dynamically.
-- ✅ **Restaurant Timezone Tracker**: Features real-world timezone-aware ticker synchronized using UTC offsets representing local restaurant timezone. Includes manual Debug overrides (only visible in dev mode).
-- ✅ **Centralized Collision-Lane Layout Engine**: Sorts events, clamps bounds, filters invalid out-of-bounds items, and computes absolute coordinates (`topPx`, `heightPx`, `leftPx`, `widthPx`, `zIndex`) programmatically.
-- ✅ **Interactive Hover Cards**: Elevates cards to higher stacking contexts on hover (`zIndex=100`), reveals customer phone numbers, and retains layout dimensions.
-
-### 2. Premium Experience (Bonus Items)
-- ✅ **Dual Theme Palette**: Seamlessly switches between Dark Velvet and Soft Light modes at the touch of a header button.
-- ✅ **Smart Density Blocks (Compact mode)**: Automatically collapses detailed reservation texts into minimalist micro-line indicators on small time slots or heavily clustered tables to prevent box overflows.
-- ✅ **High-Fidelity Drag-Selection Engine**: Features standard Pointer Capture (`pointerdown`, `pointermove`, `pointerup`, `pointercancel`) supporting selection across multiple table lanes horizontally and time range selection vertically, snapping to 15-minute segments and clamping within the restaurant operating bounds. Works gracefully across desktop mice and mobile touchscreens.
-- ✅ **Live Overlaps & Conflict Highlight**: Tracks collision lanes as the user drags and instantly transitions selection borders into an Amber Highlight (valid selection) versus a Warning Crimson Crimson/Rose theme (conflict found).
-- ✅ **Floating Action Creator Drawer**: Displays chosen table list, start/end timestamps, and zone coverage. Clicking "Создать" console.logs correct payload formats and inserts new reservations into state locally.
-- ✅ **Consolidated Unified Logging Action**: Logs exactly one clean object mapping out table numbers and conflict status parameters in the requested console.log structure.
-
----
-
-## 🚀 Local Run Instructions
-
-Follow these commands to launch the application locally:
-
-### 1. Install Dependencies
-```bash
-npm install
-```
-
-### 2. Launch Development Server
-```bash
-npm run dev
-```
-The server will boot on [http://localhost:3000](http://localhost:3000).
-
-### 3. Check types and build
-```bash
-npm run lint
-npm run build
-```
-
----
-
-## 📝 Technical Implementation Notes
-
-### Time Tracking & Clamping
-The application is resilient against booking hours exceeding the operating hours boundaries (e.g. `11:00 - 23:40`). Core logic uses:
-```typescript
-startMins = Math.max(openingMins, Math.min(closingMins, originalStart));
-```
-Any booking starting after operational closure or ending prior to opening is safely discarded. To prevent 0px card heights, standard blocks are clamped to a minimum operational space of 15 minutes.
-
-### Connected Components & Interval Coloring
-Collision tracks are structured using a greedy interval coloring algorithm. For each table, incoming bookings represent vertices in an interval graph. The layout assigns the lowest available integer "color" index describing the horizontal lane track, offsetting elements by `8px * lane` of horizontal margin while decreasing corresponding card widths proportionally.
-
----
-
-## 💡 API Enhancement Notes
-
-To transition this high-fidelity dashboard into full production, we recommend the following backend structural improvements:
-
-1. **Connected Session Token Tracking**: Introduce a `session_uuid` or table mutation counter on `/api/booking` response payloads to enable real-time WebSockets syncing with change notifications.
-2. **Standardized ISO Datetimes**: The current contract mixes `HH:MM` and ISO strings. Standardizing all event timestamps to `ISO 8601 with Zone Offset` guarantees consistent parsers on both client and mobile clients.
-3. **Optimized Segment Indexing**: When querying ranges, the backend should accept `?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD` parameters to return lightweight interval payloads rather than dumping full table logs.
+## API Notes and Possible Improvements
+For a production-grade backend API, I would consider introducing the following alterations based on standard floor management conditions:
+- **Date query parameter**: Support `GET /api/booking?date=YYYY-MM-DD` so that queries do not download unnecessary historical lists.
+- **Zone filtering**: Support query filters e.g. `?zones[]=1st_floor` to lessen structural rendering on thin clients.
+- **Server-provided restaurant time**: Return a `current_time` or offset in the payload header to align timezone current clock indicators with the precise database time clock synchronizes.
+- **Normalized event objects**: Grid layout layouts are simpler when the API returns unified, normalized event-shape schemas directly, saving processing cycles on mobile clients.
+- **Status metadata**: Distinguish system types with custom colors or flags sent directly from the server.
+- **Version checks (for caching)**: Provide an `updated_at` or entity tag header to support conditional requests for rapid page refreshes without massive body downloads.

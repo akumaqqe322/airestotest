@@ -1,0 +1,3 @@
+export const TIMELINE_PIXELS_PER_MINUTE = 2.3;
+export const TIMELINE_COLUMN_WIDTH = 190;
+export const SELECTION_SNAP_MINUTES = 15;
