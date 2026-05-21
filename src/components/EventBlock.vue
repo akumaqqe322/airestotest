@@ -53,6 +53,20 @@ function handleBlur() {
   handlePointerLeave();
 }
 
+function clearHoverState() {
+  if (hoverTimer) {
+    clearTimeout(hoverTimer);
+    hoverTimer = null;
+  }
+  isHovered.value = false;
+  showDetails.value = false;
+}
+
+function handleClick(event: MouseEvent) {
+  clearHoverState();
+  emit('click', event);
+}
+
 const isCompact = computed(() => {
   return props.event.heightPx < 44;
 });
@@ -198,13 +212,13 @@ function formatDisplayTime(val: string): string {
       height: `${event.heightPx}px`,
       width: `${event.widthPx}px`,
       left: `${event.leftPx}px`,
-      zIndex: showDetails ? 100 : (isHovered ? 40 : event.zIndex)
+      zIndex: showDetails ? 100 : (isHovered ? event.zIndex + 1 : event.zIndex)
     }"
     @pointerenter="handlePointerEnter"
     @pointerleave="handlePointerLeave"
     @focus="handleFocus"
     @blur="handleBlur"
-    @click="emit('click', $event)"
+    @click="handleClick($event)"
     tabindex="0"
     :class="[
       themeColors.bg,
@@ -220,7 +234,7 @@ function formatDisplayTime(val: string): string {
     <!-- Progress Indicator for Hover Intent -->
     <div 
       v-if="isHovered && !showDetails"
-      class="event-hover-progress absolute top-0 left-0 right-0 h-0.5"
+      class="event-hover-progress"
       :class="themeColors.progressBarBg"
       :style="{ '--hover-delay': `${HOVER_DETAILS_DELAY_MS}ms` }"
     ></div>
@@ -289,7 +303,7 @@ function formatDisplayTime(val: string): string {
       v-if="showDetails"
       :class="[
         theme === 'light' ? 'bg-white border-slate-300 text-slate-800 shadow-xl' : 'bg-[#181a22] border-zinc-700 text-slate-100 shadow-2xl',
-        'absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-64 rounded-xl border p-3.5 z-[100] cursor-default text-left select-text animate-fade-in pointer-events-none'
+        'event-details-popover absolute left-1/2 bottom-full mb-2 w-64 rounded-xl border p-3.5 z-[100] cursor-default text-left select-text'
       ]"
       @click.stop
     >
@@ -336,21 +350,48 @@ function formatDisplayTime(val: string): string {
  
   </div>
 </template>
-
+ 
 <style scoped>
 .event-hover-progress {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 3.5px;
+  height: 100%;
+  transform: scaleY(0);
+  transform-origin: bottom;
   animation: hoverProgress var(--hover-delay) linear forwards;
+  pointer-events: none;
+  z-index: 10;
 }
 
 @keyframes hoverProgress {
-  from { transform: scaleX(0); }
-  to { transform: scaleX(1); }
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+
+.event-details-popover {
+  animation: popoverFadeIn 160ms ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes popoverFadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 8px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .event-hover-progress {
+  .event-hover-progress,
+  .event-details-popover {
     animation: none !important;
-    transform: scaleX(1) !important;
+    transition: none !important;
+    transform: none !important;
   }
 }
 </style>
