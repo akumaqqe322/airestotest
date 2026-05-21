@@ -135,7 +135,7 @@ function handleDelete() {
     <div 
       :id="`edit-modal-${event.id}`"
       :class="[
-        theme === 'light' ? 'bg-white text-slate-805 border-slate-200 shadow-2xl' : 'bg-[#14161d] text-slate-100 border-[#2d3139] shadow-2xl',
+        theme === 'light' ? 'bg-white text-slate-800 border-slate-200 shadow-2xl' : 'bg-[#14161d] text-slate-100 border-[#2d3139] shadow-2xl',
         'border rounded-2xl w-full max-w-md overflow-hidden flex flex-col transition-all duration-200'
       ]"
     >
