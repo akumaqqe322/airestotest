@@ -31,81 +31,16 @@ const isDev = import.meta.env.DEV;
 // Dark/Light Theme bonus state
 const theme = ref<'dark' | 'light'>((localStorage.getItem('airesto-theme') as 'dark' | 'light') || 'dark');
 
-watch(theme, (newTheme) => {
-  localStorage.setItem('airesto-theme', newTheme);
-});
-
 // Timezone-aware clock states
 const currentRestaurantTime = ref('12:00');
 const isManualOverride = ref(false);
 const manualTimeInput = ref('14:45');
 
+let timeIntervalId: any = null;
+
 // Resolve actual current clock value
 const effectiveCurrentTime = computed(() => {
   return isManualOverride.value ? manualTimeInput.value : currentRestaurantTime.value;
-});
-
-let timeIntervalId: any = null;
-
-// Real clock sync routine
-function syncRestaurantTime() {
-  if (bookingData.value?.restaurant?.timezone) {
-    currentRestaurantTime.value = getCurrentTimeInTimezone(bookingData.value.restaurant.timezone);
-  }
-}
-
-// Fetch helper with API parameter injection
-async function loadData(dateStr: string) {
-  try {
-    isLoading.value = true;
-    error.value = null;
-    const res = await getBookingData(dateStr);
-    bookingData.value = res;
-    
-    // On first load, initialize selectedZones to all zones
-    const zones = Array.from(new Set(res.tables.map(t => t.zone))) as TableZone[];
-    if (selectedZones.value.length === 0) {
-      selectedZones.value = zones;
-    }
-    
-    syncRestaurantTime();
-  } catch (err: any) {
-    error.value = err?.message || 'Не удалось загрузить данные бронирования';
-  } finally {
-    isLoading.value = false;
-  }
-}
-
-// Automatically query database/mocks on date transitions
-watch(selectedDay, (newDay) => {
-  // Clear any existing slot selection on date change
-  resetSelection();
-  loadData(newDay);
-});
-
-// Reset selection when selected zones changes
-watch(selectedZones, () => {
-  resetSelection();
-}, { deep: true });
-
-// Reset selection when filtered tables length changes
-watch(() => filteredTables.value.length, () => {
-  resetSelection();
-});
-
-onMounted(async () => {
-  await loadData(selectedDay.value);
-  
-  // Real clock ticking updates every 30 seconds
-  timeIntervalId = setInterval(() => {
-    syncRestaurantTime();
-  }, 30000);
-});
-
-onUnmounted(() => {
-  if (timeIntervalId) {
-    clearInterval(timeIntervalId);
-  }
 });
 
 // Dynamic configuration of zones fetched from raw data
@@ -157,6 +92,75 @@ const {
   TIMELINE_PIXELS_PER_MINUTE,
   TIMELINE_COLUMN_WIDTH
 );
+
+// Watchers and lifecycle triggers
+watch(theme, (newTheme) => {
+  localStorage.setItem('airesto-theme', newTheme);
+});
+
+// Automatically query database/mocks on date transitions
+watch(selectedDay, (newDay) => {
+  // Clear any existing slot selection on date change
+  resetSelection();
+  loadData(newDay);
+});
+
+// Reset selection when selected zones changes
+watch(selectedZones, () => {
+  resetSelection();
+}, { deep: true });
+
+// Reset selection when filtered tables mapping changes
+watch(
+  () => filteredTables.value.map(table => table.id).join('|'),
+  () => {
+    resetSelection();
+  }
+);
+
+// Real clock sync routine
+function syncRestaurantTime() {
+  if (bookingData.value?.restaurant?.timezone) {
+    currentRestaurantTime.value = getCurrentTimeInTimezone(bookingData.value.restaurant.timezone);
+  }
+}
+
+// Fetch helper with API parameter injection
+async function loadData(dateStr: string) {
+  try {
+    isLoading.value = true;
+    error.value = null;
+    const res = await getBookingData(dateStr);
+    bookingData.value = res;
+    
+    // On first load, initialize selectedZones to all zones
+    const zones = Array.from(new Set(res.tables.map(t => t.zone))) as TableZone[];
+    if (selectedZones.value.length === 0) {
+      selectedZones.value = zones;
+    }
+    
+    syncRestaurantTime();
+  } catch (err: any) {
+    error.value = err?.message || 'Не удалось загрузить данные бронирования';
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+onMounted(async () => {
+  await loadData(selectedDay.value);
+  
+  // Real clock ticking updates every 30 seconds
+  timeIntervalId = setInterval(() => {
+    syncRestaurantTime();
+  }, 30000);
+});
+
+onUnmounted(() => {
+  if (timeIntervalId) {
+    clearInterval(timeIntervalId);
+  }
+});
 
 // Create slot action callback and log EXACTLY one consolidated object
 function handleCreateBooking() {
