@@ -3,7 +3,8 @@ import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
 import type { BookingResponse, TableZone } from './types/booking';
 import { getBookingData } from './services/bookingApi';
 import { normalizeTables } from './utils/timeline';
-import { getCurrentTimeInTimezone, timeToMinutes, minutesToTime } from './utils/time';
+import { getCurrentTimeInTimezone } from './utils/time';
+import { useTimelineSelection } from './composables/useTimelineSelection';
 
 // Components
 import AppHeader from './components/AppHeader.vue';
@@ -22,8 +23,8 @@ const error = ref<string | null>(null);
 const selectedDay = ref('2025-04-04');
 const selectedZones = ref<TableZone[]>([]);
 
-// Selection bonus state
-const selectedSlot = ref<{ tableId: string; tableName: string; startMins: number; endMins: number } | null>(null);
+// Development env check
+const isDev = import.meta.env.DEV;
 
 // Dark/Light Theme bonus state
 const theme = ref<'dark' | 'light'>((localStorage.getItem('airesto-theme') as 'dark' | 'light') || 'dark');
@@ -76,7 +77,7 @@ async function loadData(dateStr: string) {
 // Automatically query database/mocks on date transitions
 watch(selectedDay, (newDay) => {
   // Clear any existing slot selection on date change
-  selectedSlot.value = null;
+  resetSelection();
   loadData(newDay);
 });
 
@@ -122,70 +123,67 @@ const ordersCount = computed(() => {
   );
 });
 
-// Selection time modifier input callbacks
-function handleStartMinsChange(timeStr: string) {
-  if (!selectedSlot.value) return;
-  const startMins = timeToMinutes(timeStr);
-  const closingMins = timeToMinutes(bookingData.value?.restaurant?.closing_time || '23:40');
-  const endMins = Math.min(closingMins, startMins + (selectedSlot.value.endMins - selectedSlot.value.startMins));
-  
-  selectedSlot.value = {
-    ...selectedSlot.value,
-    startMins,
-    endMins
-  };
-}
+// Setup the Drag-Selection Composable values
+const openingTimeRef = computed(() => bookingData.value?.restaurant?.opening_time || '11:00');
+const closingTimeRef = computed(() => bookingData.value?.restaurant?.closing_time || '23:45');
 
-function handleEndMinsChange(timeStr: string) {
-  if (!selectedSlot.value) return;
-  const endMins = timeToMinutes(timeStr);
-  const startMins = Math.max(
-    timeToMinutes(bookingData.value?.restaurant?.opening_time || '11:00'), 
-    Math.min(endMins - 15, selectedSlot.value.startMins)
-  );
-  
-  selectedSlot.value = {
-    ...selectedSlot.value,
-    startMins,
-    endMins
-  };
-}
+const {
+  isDragging,
+  activeSelection,
+  resetSelection,
+  updateStartTime,
+  updateEndTime,
+  handlePointerDown,
+  handlePointerMove,
+  handlePointerUp,
+  handlePointerCancel
+} = useTimelineSelection(
+  filteredTables,
+  openingTimeRef,
+  closingTimeRef,
+  selectedDay,
+  2.3, // pixelsPerMinute matching BookingTimeline.vue
+  190  // columnWidth matching BookingTimeline.vue
+);
 
-// Create slot action callback (bonus task)
+// Create slot action callback and log EXACTLY one consolidated object
 function handleCreateBooking() {
-  if (!selectedSlot.value || !bookingData.value) return;
+  if (!activeSelection.value || !bookingData.value) return;
   
-  const { tableId, startMins, endMins, tableName } = selectedSlot.value;
-  const startStr = minutesToTime(startMins);
-  const endStr = minutesToTime(endMins);
+  const sel = activeSelection.value;
   
-  // Console log parameters exactly as required by specifications
-  console.log('=== CREATE BOOKING ===');
-  console.log('Table ID:', tableId);
-  console.log('Table Name:', tableName);
-  console.log('Start Time:', startStr);
-  console.log('End Time:', endStr);
-  console.log('======================');
+  // Console log payload EXACTLY as requested by specifications
+  console.log({
+    tableIds: sel.tableIds,
+    tableNumbers: sel.tableNumbers,
+    selectedDate: sel.selectedDate,
+    startTime: sel.startTime,
+    endTime: sel.endTime,
+    zones: sel.zones,
+    hasConflicts: sel.hasConflicts
+  });
   
-  // Render and append the newly created booking locally in current state
-  const targetTable = bookingData.value.tables.find(t => t.id === tableId);
-  if (targetTable) {
-    targetTable.reservations.push({
-      id: Date.now(),
-      name_for_reservation: "Бронь AI Studio",
-      num_people: targetTable.capacity || 4,
-      phone_number: "+7 (999) 555-44-33",
-      status: "Новая",
-      seating_time: `${selectedDay.value}T${startStr}:00.000000+10:00`,
-      end_time: `${selectedDay.value}T${endStr}:00.000000+10:00`
-    });
-    
-    // Trigger reactivity update via reassignment
-    bookingData.value = { ...bookingData.value };
+  // Optimistic local update adding a neutral "Новая бронь" descriptor to all selected tables
+  for (const tableId of sel.tableIds) {
+    const targetTable = bookingData.value.tables.find(t => t.id === tableId);
+    if (targetTable) {
+      targetTable.reservations.push({
+        id: Date.now() + Math.floor(Math.random() * 1000),
+        name_for_reservation: "Новая бронь",
+        num_people: targetTable.capacity || 4,
+        phone_number: "+7 (999) 555-44-33",
+        status: "Новая",
+        seating_time: `${sel.selectedDate}T${sel.startTime}:00.000000+10:00`,
+        end_time: `${sel.selectedDate}T${sel.endTime}:00.000000+10:00`
+      });
+    }
   }
   
+  // Refresh layout
+  bookingData.value = { ...bookingData.value };
+  
   // Dismiss selection
-  selectedSlot.value = null;
+  resetSelection();
 }
 </script>
 
@@ -194,7 +192,7 @@ function handleCreateBooking() {
     :class="[
       theme === 'light' ? 'bg-[#f8fafc] text-[#1e293b]' : 'bg-[#0d0f11] text-[#e2e8f0]',
       'min-h-screen flex flex-col font-sans select-none overflow-x-hidden transition-colors duration-200 lg:pb-0',
-      selectedSlot ? 'pb-28' : ''
+      activeSelection ? 'pb-28' : ''
     ]"
   >
     <!-- Header -->
@@ -269,6 +267,7 @@ function handleCreateBooking() {
 
         <!-- Optional developer time manual adjusters (shown nicely in corner) -->
         <div 
+          v-if="isDev"
           :class="[
             theme === 'light' ? 'bg-white border-slate-200' : 'bg-[#14161d] border-[#2d3139]',
             'ml-auto flex items-center gap-3 p-1.5 rounded-xl border text-xs text-gray-500 shadow-sm transition-colors'
@@ -333,57 +332,107 @@ function handleCreateBooking() {
         :current-time="effectiveCurrentTime"
         :pixels-per-minute="2.3"
         :theme="theme"
-        :selected-slot="selectedSlot"
-        @select-slot="(slot) => selectedSlot = slot"
+        :selection="activeSelection"
+        @pointerdown="handlePointerDown"
+        @pointermove="handlePointerMove"
+        @pointerup="handlePointerUp"
+        @pointercancel="handlePointerCancel"
       />
 
     </main>
 
     <!-- Floating Slot Creation Details Drawer (Bonus Tasks) -->
     <div 
-      v-if="selectedSlot" 
-      class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[#14161d]/95 backdrop-blur-md border border-amber-500/40 rounded-2xl p-4 shadow-2xl flex flex-col sm:flex-row items-center gap-4 z-50 max-w-lg w-[calc(100%-2rem)] animate-fade-in"
+      v-if="activeSelection" 
+      :class="[
+        activeSelection.hasConflicts 
+          ? 'border-rose-500 bg-[#1a1416]/95' 
+          : 'border-amber-500/40 bg-[#14161d]/95',
+        'fixed bottom-6 left-1/2 -translate-x-1/2 backdrop-blur-md border rounded-2xl p-4 shadow-2xl flex flex-col sm:flex-row items-center gap-4 z-50 max-w-lg w-[calc(100%-2rem)] animate-fade-in'
+      ]"
     >
-      <div class="flex-1 flex flex-col">
-        <div class="text-[9px] text-[#fbbf24] font-bold uppercase tracking-widest leading-none">Новый слот бронирования</div>
-        <div class="text-sm font-extrabold text-white mt-1 truncate leading-none">
-          {{ selectedSlot.tableName }}
+      <div class="flex-1 flex flex-col min-w-0 w-full">
+        <!-- Badge -->
+        <div 
+          :class="[
+            activeSelection.hasConflicts ? 'text-rose-400' : 'text-[#fbbf24]',
+            'text-[9px] font-bold uppercase tracking-widest leading-none flex items-center gap-1.5'
+          ]"
+        >
+          <span 
+            v-if="activeSelection.hasConflicts" 
+            class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"
+          ></span>
+          <span>
+            {{ activeSelection.hasConflicts ? 'Конфликт бронирования' : 'Новый слот бронирования' }}
+          </span>
         </div>
-        <div class="text-[10px] text-slate-400 mt-1.5 flex items-center gap-1.5 font-mono">
+
+        <!-- Table numbers -->
+        <div class="text-sm font-extrabold text-white mt-1 truncate leading-none">
+          Столы: {{ activeSelection.tableNumbers.map(n => `№${n}`).join(', ') }}
+        </div>
+
+        <!-- Meta info -->
+        <div class="text-[10px] text-slate-400 mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 font-mono">
           <span>Слот:</span>
           <span class="text-white font-bold">
-            {{ minutesToTime(selectedSlot.startMins) }} - {{ minutesToTime(selectedSlot.endMins) }}
+            {{ activeSelection.startTime }} - {{ activeSelection.endTime }}
           </span>
+          <span class="text-slate-500">|</span>
+          <span>Залы:</span>
+          <span class="text-slate-300 font-medium">
+            {{ activeSelection.zones.join(', ') }}
+          </span>
+        </div>
+
+        <!-- Conflict warning text -->
+        <div 
+          v-if="activeSelection.hasConflicts" 
+          class="text-[10px] text-rose-400 mt-2 font-medium flex items-center gap-1 bg-rose-500/10 border border-rose-500/20 px-2 py-1 rounded-md"
+        >
+          <AlertCircle class="w-3.5 h-3.5 shrink-0" />
+          <span>Выбранное время пересекается с существующей бронью!</span>
         </div>
       </div>
 
       <!-- Micro inline clock adjuster -->
-      <div class="flex items-center gap-2 bg-[#1b1e26] border border-[#2d3139] px-2.5 py-1.5 rounded-xl text-xs font-mono shrink-0">
+      <div 
+        :class="[
+          activeSelection.hasConflicts ? 'border-rose-500/30 bg-[#241b1d]' : 'border-[#2d3139] bg-[#1b1e26]',
+          'flex items-center gap-2 border px-2.5 py-1.5 rounded-xl text-xs font-mono shrink-0'
+        ]"
+      >
         <input 
           type="time" 
-          :value="minutesToTime(selectedSlot.startMins)"
-          @change="(e) => handleStartMinsChange((e.target as HTMLInputElement).value)"
+          :value="activeSelection.startTime"
+          @change="(e) => updateStartTime((e.target as HTMLInputElement).value)"
           class="bg-transparent border-none text-white text-center w-[54px] focus:outline-none focus:ring-0 leading-none p-0 cursor-pointer"
         />
         <span class="text-gray-500">-</span>
         <input 
           type="time" 
-          :value="minutesToTime(selectedSlot.endMins)"
-          @change="(e) => handleEndMinsChange((e.target as HTMLInputElement).value)"
+          :value="activeSelection.endTime"
+          @change="(e) => updateEndTime((e.target as HTMLInputElement).value)"
           class="bg-transparent border-none text-white text-center w-[54px] focus:outline-none focus:ring-0 leading-none p-0 cursor-pointer"
         />
       </div>
 
       <div class="flex items-center gap-2 w-full sm:w-auto shrink-0">
         <button 
-          @click="selectedSlot = null"
+          @click="resetSelection"
           class="flex-1 sm:flex-none bg-transparent hover:bg-white/5 text-slate-400 hover:text-white px-3.5 py-2.5 rounded-xl text-xs font-bold transition-colors cursor-pointer"
         >
           Отмена
         </button>
         <button 
           @click="handleCreateBooking"
-          class="flex-1 sm:flex-none bg-amber-500 hover:bg-amber-400 text-black font-extrabold px-5 py-2.5 rounded-xl text-xs shadow-lg shadow-amber-500/20 active:scale-98 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+          :class="[
+            activeSelection.hasConflicts 
+              ? 'bg-rose-500 hover:bg-rose-400 text-white shadow-rose-500/20' 
+              : 'bg-amber-500 hover:bg-amber-400 text-black shadow-amber-500/20',
+            'flex-1 sm:flex-none font-extrabold px-5 py-2.5 rounded-xl text-xs shadow-lg active:scale-98 transition-all flex items-center justify-center gap-1.5 cursor-pointer'
+          ]"
         >
           Создать
         </button>

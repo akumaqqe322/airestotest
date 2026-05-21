@@ -30,15 +30,17 @@ Designed with a focus on ease of floor management:
 - ✅ **Complete Vue 3 + Vite Cleanup**: Fully migrated from React template layers to Vue SFC format; completely stripped React variables and node modules.
 - ✅ **Zone Filter Toggles**: Support selecting single or multiple zones (`1 этаж`, `2 этаж`, `Банкетный зал`) dynamically. Handles empty states gracefully.
 - ✅ **Russian Date Switcher**: Lets staff shift dates, regenerating corresponding mock data dynamically.
-- ✅ **Restaurant Timezone Tracker**: Features real-world timezone-aware ticker synchronized using UTC offsets representing local restaurant timezone. Includes manual Debug overrides.
+- ✅ **Restaurant Timezone Tracker**: Features real-world timezone-aware ticker synchronized using UTC offsets representing local restaurant timezone. Includes manual Debug overrides (only visible in dev mode).
 - ✅ **Centralized Collision-Lane Layout Engine**: Sorts events, clamps bounds, filters invalid out-of-bounds items, and computes absolute coordinates (`topPx`, `heightPx`, `leftPx`, `widthPx`, `zIndex`) programmatically.
 - ✅ **Interactive Hover Cards**: Elevates cards to higher stacking contexts on hover (`zIndex=100`), reveals customer phone numbers, and retains layout dimensions.
 
 ### 2. Premium Experience (Bonus Items)
 - ✅ **Dual Theme Palette**: Seamlessly switches between Dark Velvet and Soft Light modes at the touch of a header button.
 - ✅ **Smart Density Blocks (Compact mode)**: Automatically collapses detailed reservation texts into minimalist micro-line indicators on small time slots or heavily clustered tables to prevent box overflows.
-- ✅ **Interactive Point Selection**: Click on empty tracks to suggest new reservation blocks. The timeline locks onto table coordinates and rounds timestamps to the nearest 15-minute mark.
-- ✅ **Floating Action Creator**: Prompts the user with slot confirmation, logs exact table identities and timing parameters to the console, and dynamically inserts the booking locally in-state.
+- ✅ **High-Fidelity Drag-Selection Engine**: Features standard Pointer Capture (`pointerdown`, `pointermove`, `pointerup`, `pointercancel`) supporting selection across multiple table lanes horizontally and time range selection vertically, snapping to 15-minute segments and clamping within the restaurant operating bounds. Works gracefully across desktop mice and mobile touchscreens.
+- ✅ **Live Overlaps & Conflict Highlight**: Tracks collision lanes as the user drags and instantly transitions selection borders into an Amber Highlight (valid selection) versus a Warning Crimson Crimson/Rose theme (conflict found).
+- ✅ **Floating Action Creator Drawer**: Displays chosen table list, start/end timestamps, and zone coverage. Clicking "Создать" console.logs correct payload formats and inserts new reservations into state locally.
+- ✅ **Consolidated Unified Logging Action**: Logs exactly one clean object mapping out table numbers and conflict status parameters in the requested console.log structure.
 
 ---
 

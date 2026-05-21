@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import type { NormalizedTable } from '../types/booking';
+import type { NormalizedTable, TimelineSelection } from '../types/booking';
 import TableHeader from './TableHeader.vue';
 import TimeAxis from './TimeAxis.vue';
 import TableColumn from './TableColumn.vue';
@@ -15,16 +15,19 @@ const props = withDefaults(defineProps<{
   pixelsPerMinute?: number;
   columnWidth?: number;
   theme?: 'dark' | 'light';
-  selectedSlot?: { tableId: string; tableName: string; startMins: number; endMins: number } | null;
+  selection?: TimelineSelection | null;
 }>(), {
   pixelsPerMinute: 2, // 2px per minute means 60px for 30 minutes
   columnWidth: 190,   // Width of each table column track
   theme: 'dark',
-  selectedSlot: null
+  selection: null
 });
 
 const emit = defineEmits<{
-  (e: 'select-slot', slot: { tableId: string; tableName: string; startMins: number; endMins: number }): void;
+  (e: 'pointerdown', event: PointerEvent): void;
+  (e: 'pointermove', event: PointerEvent): void;
+  (e: 'pointerup', event: PointerEvent): void;
+  (e: 'pointercancel', event: PointerEvent): void;
 }>();
 
 const timelineScrollContainer = ref<HTMLDivElement | null>(null);
@@ -65,8 +68,14 @@ const timelineScrollContainer = ref<HTMLDivElement | null>(null);
           class="sticky left-0 z-20"
         />
 
-        <!-- Table Columns grid wrapper -->
-        <div class="flex relative">
+        <!-- Table Columns grid wrapper with Pointer event capturing -->
+        <div 
+          class="flex relative cursor-crosshair select-none touch-none"
+          @pointerdown="emit('pointerdown', $event)"
+          @pointermove="emit('pointermove', $event)"
+          @pointerup="emit('pointerup', $event)"
+          @pointercancel="emit('pointercancel', $event)"
+        >
           <!-- Pulse current timeline indicator -->
           <CurrentTimeLine
             :current-time="currentTime"
@@ -86,8 +95,7 @@ const timelineScrollContainer = ref<HTMLDivElement | null>(null);
             :pixels-per-minute="pixelsPerMinute"
             :column-width="columnWidth"
             :theme="theme"
-            :selected-slot="selectedSlot"
-            @select-slot="(slot) => emit('select-slot', slot)"
+            :selection="selection"
           />
         </div>
       </div>

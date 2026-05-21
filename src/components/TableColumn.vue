@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import type { NormalizedTable } from '../types/booking';
-import { timeToMinutes, minutesToTime, clamp } from '../utils/time';
+import type { NormalizedTable, TimelineSelection } from '../types/booking';
+import { timeToMinutes, minutesToTime } from '../utils/time';
 import { layoutEventsForColumn } from '../utils/timeline';
 import EventBlock from './EventBlock.vue';
 
@@ -13,15 +13,11 @@ const props = withDefaults(defineProps<{
   pixelsPerMinute: number;
   columnWidth: number;
   theme?: 'dark' | 'light';
-  selectedSlot?: { tableId: string; tableName: string; startMins: number; endMins: number } | null;
+  selection?: TimelineSelection | null;
 }>(), {
   theme: 'dark',
-  selectedSlot: null
+  selection: null
 });
-
-const emit = defineEmits<{
-  (e: 'select-slot', slot: { tableId: string; tableName: string; startMins: number; endMins: number }): void;
-}>();
 
 const columnRef = ref<HTMLDivElement | null>(null);
 
@@ -48,47 +44,20 @@ const gridBackgroundStyle = computed(() => {
   };
 });
 
-// Calculate active selection state for this block
-const hasActiveSelection = computed(() => {
-  return props.selectedSlot && props.selectedSlot.tableId === props.table.id;
+// Calculate active selection state for this column
+const isSelected = computed(() => {
+  return props.selection && props.selection.tableIds.includes(props.table.id);
 });
 
 const selectionTopPx = computed(() => {
-  if (!props.selectedSlot) return 0;
-  return (props.selectedSlot.startMins - startMinutes.value) * props.pixelsPerMinute;
+  if (!props.selection) return 0;
+  return (props.selection.startMins - startMinutes.value) * props.pixelsPerMinute;
 });
 
 const selectionHeightPx = computed(() => {
-  if (!props.selectedSlot) return 0;
-  return (props.selectedSlot.endMins - props.selectedSlot.startMins) * props.pixelsPerMinute;
+  if (!props.selection) return 0;
+  return (props.selection.endMins - props.selection.startMins) * props.pixelsPerMinute;
 });
-
-// Click handler to select new slot segments contextually
-function handleTrackClick(e: MouseEvent) {
-  if (!columnRef.value) return;
-  const rect = columnRef.value.getBoundingClientRect();
-  const y = e.clientY - rect.top;
-  
-  const openingMins = startMinutes.value;
-  const closingMins = endMinutes.value;
-  
-  // Calculate relative minutes clicked
-  const clickedMins = (y / props.pixelsPerMinute) + openingMins;
-  
-  // Round to nearest 15 minute segment
-  const roundedMins = Math.round(clickedMins / 15) * 15;
-  const clampedStart = clamp(roundedMins, openingMins, closingMins - 30);
-  
-  // Default booking window suggestion: 90 minutes (1.5 Hours)
-  const clampedEnd = clamp(clampedStart + 90, openingMins + 30, closingMins);
-
-  emit('select-slot', {
-    tableId: props.table.id,
-    tableName: props.table.number,
-    startMins: clampedStart,
-    endMins: clampedEnd
-  });
-}
 
 // Call the collision-lane sorting & layout function
 const positionedEvents = computed(() => {
@@ -106,7 +75,6 @@ const positionedEvents = computed(() => {
 <template>
   <div
     ref="columnRef"
-    @click="handleTrackClick"
     :style="{ 
       width: `${columnWidth}px`, 
       height: columnHeight,
@@ -129,7 +97,7 @@ const positionedEvents = computed(() => {
 
     <!-- Render selection highlight slot placeholder (Bonus feature) -->
     <div 
-      v-if="hasActiveSelection"
+      v-if="isSelected && selection"
       :style="{
         top: `${selectionTopPx}px`,
         height: `${selectionHeightPx}px`,
@@ -137,11 +105,28 @@ const positionedEvents = computed(() => {
         left: '3px',
         zIndex: 40
       }"
-      class="absolute rounded-lg border-2 border-dashed border-amber-500 bg-amber-500/15 pointer-events-none flex flex-col items-center justify-center text-center p-1 animate-pulse"
+      :class="[
+        selection.hasConflicts
+          ? 'border-rose-500 bg-rose-500/10 border-2 border-dashed'
+          : 'border-amber-500 bg-amber-500/15 border-2 border-dashed',
+        'absolute rounded-lg pointer-events-none flex flex-col items-center justify-center text-center p-1 animate-pulse'
+      ]"
     >
-      <span class="text-[9px] font-bold text-amber-500 uppercase tracking-widest leading-none">ВЫБОР</span>
-      <span class="text-[10px] font-extrabold text-white font-mono mt-1 bg-amber-600/60 px-1.5 py-0.5 rounded leading-none shadow shadow-amber-950/30">
-        {{ minutesToTime(selectedSlot?.startMins || 0) }} - {{ minutesToTime(selectedSlot?.endMins || 0) }}
+      <span 
+        :class="[
+          selection.hasConflicts ? 'text-rose-500' : 'text-amber-500',
+          'text-[9px] font-bold uppercase tracking-widest leading-none'
+        ]"
+      >
+        {{ selection.hasConflicts ? 'КОНФЛИКТ' : 'ВЫБОР' }}
+      </span>
+      <span 
+        :class="[
+          selection.hasConflicts ? 'bg-rose-600/75' : 'bg-amber-600/60',
+          'text-[10px] font-extrabold text-white font-mono mt-1 px-1.5 py-0.5 rounded leading-none shadow shadow-amber-950/30'
+        ]"
+      >
+        {{ selection.startTime }} - {{ selection.endTime }}
       </span>
     </div>
   </div>

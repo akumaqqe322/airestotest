@@ -81,3 +81,15 @@ export interface PositionedTimelineEvent extends TimelineEvent {
   zIndex: number;
 }
 
+export interface TimelineSelection {
+  tableIds: string[];
+  tableNumbers: string[];
+  zones: TableZone[];
+  selectedDate: string;
+  startMins: number; // Snapped
+  endMins: number;   // Snapped
+  startTime: string; // HH:MM
+  endTime: string;   // HH:MM
+  hasConflicts: boolean;
+}
+
