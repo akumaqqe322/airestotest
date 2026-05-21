@@ -154,7 +154,7 @@ function formatDisplayTime(val: string): string {
         ? 'border-slate-200 border-r border-t border-b hover:bg-slate-100' 
         : 'border-zinc-800 border-r border-t border-b hover:bg-zinc-800',
       isCurrentlyHovered ? 'shadow-lg scale-[1.01]' : 'shadow-none',
-      isCompact ? 'px-1 py-0.5' : 'px-2 py-1.5',
+      isCompact ? 'px-1 py-0.5' : 'px-1.5 py-1',
       'event-block absolute border-l-[3px] rounded-r-md flex flex-col justify-between select-none cursor-pointer overflow-hidden transition-all duration-150'
     ]"
   >
@@ -167,12 +167,12 @@ function formatDisplayTime(val: string): string {
           <span 
             :class="[
               themeColors.badgeBg,
-              'text-[8px] font-bold px-1 py-0 rounded uppercase tracking-wider truncate border leading-none shrink-0'
+              'text-[7.5px] font-bold px-1 py-0 rounded uppercase tracking-wider truncate border leading-none shrink-0'
             ]"
           >
             {{ event.status }}
           </span>
-          <span :class="[theme === 'light' ? 'text-slate-600' : 'text-slate-300', 'text-[8.5px] font-mono leading-none truncate font-bold shrink-0']">
+          <span :class="[theme === 'light' ? 'text-slate-600' : 'text-slate-300', 'text-[8px] font-mono leading-none truncate font-bold shrink-0']">
             {{ formatDisplayTime(event.startTime) }}
           </span>
         </div>
@@ -180,36 +180,36 @@ function formatDisplayTime(val: string): string {
 
       <template v-else>
         <!-- Top: Status + Time Range -->
-        <div class="flex items-center justify-between gap-1 min-w-0 w-full leading-none">
+        <div class="flex items-center justify-between gap-1 min-w-0 w-full leading-none mb-0.5">
           <!-- Status Label -->
           <span 
             :class="[
               themeColors.badgeBg,
-              'text-[8.5px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider truncate border leading-none shrink-0'
+              'text-[8px] font-bold px-1 py-0.5 rounded uppercase tracking-wider truncate border leading-none shrink-0'
             ]"
           >
             {{ event.status }}
           </span>
           <!-- Time Range -->
-          <span :class="[theme === 'light' ? 'text-slate-500' : 'text-slate-400', 'text-[9.5px] font-mono font-semibold shrink-0']">
+          <span :class="[theme === 'light' ? 'text-slate-500' : 'text-slate-400', 'text-[9px] font-mono font-semibold shrink-0']">
             {{ formatDisplayTime(event.startTime) }}-{{ formatDisplayTime(event.endTime) }}
           </span>
         </div>
 
         <!-- Center: Guest Name / Order tag -->
-        <div class="my-auto min-w-0 pr-1 w-full leading-tight">
-          <h4 :class="[theme === 'light' ? 'text-slate-900 font-extrabold' : 'text-white font-extrabold', 'text-[11px] tracking-tight truncate']">
+        <div class="my-auto min-w-0 pr-0.5 w-full leading-tight">
+          <h4 :class="[theme === 'light' ? 'text-slate-900 font-extrabold' : 'text-white font-extrabold', 'text-[10px] tracking-tight truncate']">
             {{ event.type === 'reservation' ? event.name : (event.status === 'Banquet' ? 'Банкет' : 'Заказ') }}
           </h4>
         </div>
 
         <!-- Bottom: Guest Count if space allows -->
-        <div v-if="event.heightPx >= 52" class="flex items-center justify-between text-[9px] text-slate-400 mt-0.5 leading-none font-mono">
-          <span v-if="event.type === 'reservation'" class="flex items-center gap-1 shrink-0 font-medium">
-            <User class="w-2.5 h-2.5 shrink-0 opacity-70" />
+        <div v-if="event.heightPx >= 48" class="flex items-center justify-between text-[8.5px] text-slate-400 mt-0.5 leading-none font-mono">
+          <span v-if="event.type === 'reservation'" class="flex items-center gap-0.5 shrink-0 font-medium">
+            <User class="w-2 h-2 shrink-0 opacity-70" />
             <span>{{ event.numPeople }} чел</span>
           </span>
-          <span class="ml-auto opacity-70">
+          <span class="ml-auto opacity-75">
             {{ formatDisplayTime(event.endTime) }}
           </span>
         </div>

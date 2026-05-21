@@ -153,13 +153,13 @@ onUpdated(() => {
             theme === 'light' 
               ? 'border-slate-200 bg-slate-100 hover:bg-slate-200/50 border-b text-slate-900' 
               : 'border-[#2d3139] bg-[#14161d] hover:bg-[#1b1e26] border-b text-slate-100',
-            'sticky top-0 z-30 border-r px-2.5 py-1.5 flex flex-col justify-center transition-all select-none'
+            'sticky top-0 z-30 border-r px-2 py-1 flex flex-col justify-center transition-all select-none'
           ]"
         >
-          <div class="text-sm font-black tracking-tight leading-none">
+          <div class="text-[13px] font-black tracking-tight leading-none">
             #{{ table.number }}
           </div>
-          <div class="text-[10px] text-slate-400 mt-1 flex flex-wrap items-center gap-1.5 leading-none shrink-0 font-medium font-sans">
+          <div class="text-[9.5px] text-slate-400 mt-0.5 flex flex-wrap items-center gap-1 leading-none shrink-0 font-medium font-sans">
             <span>{{ table.capacity }} чел</span>
             <span class="text-slate-500">•</span>
             <span class="truncate">{{ table.zone }}</span>

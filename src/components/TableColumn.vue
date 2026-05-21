@@ -41,7 +41,7 @@ const columnHeight = computed(() => {
 // Grid background styles to draw 30-minute interval linear indicators
 const gridBackgroundStyle = computed(() => {
   const slotHeight = 30 * props.pixelsPerMinute; // 30 minutes
-  const gridColor = props.theme === 'light' ? 'rgba(148, 163, 184, 0.15)' : 'rgba(45, 49, 57, 0.4)';
+  const gridColor = props.theme === 'light' ? 'rgba(148, 163, 184, 0.08)' : 'rgba(255, 255, 255, 0.04)';
   return {
     backgroundImage: `linear-gradient(to bottom, ${gridColor} 1px, transparent 1px)`,
     backgroundSize: `100% ${slotHeight}px`,
