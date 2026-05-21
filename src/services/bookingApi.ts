@@ -1,13 +1,14 @@
 import type { BookingResponse } from '../types/booking';
-import { MOCK_BOOKING_DATA } from '../mocks/bookingMock';
+import { generateMockDataForDate } from '../mocks/bookingMock';
 
 /**
- * Simulates calling an API endpoint with a network delay
+ * Simulates calling an API endpoint with a network delay for a specific selected date
  */
-export async function getBookingData(): Promise<BookingResponse> {
+export async function getBookingData(selectedDate?: string): Promise<BookingResponse> {
   return new Promise((resolve) => {
     setTimeout(() => {
-      resolve(JSON.parse(JSON.stringify(MOCK_BOOKING_DATA)));
-    }, 450); // 450ms simulated delay
+      const data = generateMockDataForDate(selectedDate || "2025-04-04");
+      resolve(JSON.parse(JSON.stringify(data)));
+    }, 350); // 350ms simulated network delay
   });
 }

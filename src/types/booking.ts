@@ -68,3 +68,16 @@ export interface NormalizedTable {
   zone: TableZone;
   events: TimelineEvent[];
 }
+
+export interface PositionedTimelineEvent extends TimelineEvent {
+  topPx: number;
+  heightPx: number;
+  leftPx: number;
+  widthPx: number;
+  lane: number;
+  overlapCount: number;
+  isOverlapped: boolean;
+  compact: boolean;
+  zIndex: number;
+}
+

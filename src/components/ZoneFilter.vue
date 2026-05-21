@@ -4,12 +4,30 @@ import type { TableZone } from '../types/booking';
 
 const props = defineProps<{
   zones: TableZone[];
-  selectedZone: TableZone | 'Все зоны';
+  selectedZones: TableZone[];
 }>();
 
 const emit = defineEmits<{
-  (e: 'update:selectedZone', value: TableZone | 'Все зоны'): void;
+  (e: 'update:selectedZones', value: TableZone[]): void;
 }>();
+
+function isSelected(zone: TableZone): boolean {
+  return props.selectedZones.includes(zone);
+}
+
+function toggleZone(zone: TableZone) {
+  let newList = [...props.selectedZones];
+  if (newList.includes(zone)) {
+    newList = newList.filter(z => z !== zone);
+  } else {
+    newList.push(zone);
+  }
+  emit('update:selectedZones', newList);
+}
+
+function selectAll() {
+  emit('update:selectedZones', [...props.zones]);
+}
 </script>
 
 <template>
@@ -21,13 +39,8 @@ const emit = defineEmits<{
 
     <div class="flex items-center gap-1.5 shrink-0">
       <button
-        @click="emit('update:selectedZone', 'Все зоны')"
-        :class="[
-          'px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider cursor-pointer transition-all duration-150',
-          selectedZone === 'Все зоны'
-            ? 'bg-[#2d3139] text-white border border-[#3f4550]'
-            : 'bg-transparent text-gray-400 hover:bg-[#1b1e26] hover:text-white border border-transparent'
-        ]"
+        @click="selectAll"
+        class="px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider cursor-pointer bg-[#1b1e26] border border-[#2d3139] text-[#e2e8f0] hover:text-amber-500 hover:border-amber-500 transition-all duration-150 mr-1"
       >
         Все залы
       </button>
@@ -35,12 +48,12 @@ const emit = defineEmits<{
       <button
         v-for="zone in zones"
         :key="zone"
-        @click="emit('update:selectedZone', zone)"
+        @click="toggleZone(zone)"
         :class="[
-          'px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider cursor-pointer transition-all duration-150',
-          selectedZone === zone
-            ? 'bg-[#2d3139] text-white border border-[#3f4550]'
-            : 'bg-transparent text-gray-400 hover:bg-[#1b1e26] hover:text-white border border-transparent'
+          'px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider cursor-pointer border transition-all duration-150',
+          isSelected(zone)
+            ? 'bg-amber-500 text-black border-amber-500 font-bold shadow-md shadow-amber-500/10'
+            : 'bg-transparent text-gray-400 border-transparent hover:bg-[#1b1e26] hover:text-white'
         ]"
       >
         {{ zone }}

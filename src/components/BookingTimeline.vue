@@ -10,29 +10,47 @@ const props = withDefaults(defineProps<{
   tables: NormalizedTable[];
   openingTime: string;
   closingTime: string;
+  timezone: string;
   currentTime: string;
   pixelsPerMinute?: number;
   columnWidth?: number;
+  theme?: 'dark' | 'light';
+  selectedSlot?: { tableId: string; tableName: string; startMins: number; endMins: number } | null;
 }>(), {
   pixelsPerMinute: 2, // 2px per minute means 60px for 30 minutes
-  columnWidth: 190    // Width of each table column track
+  columnWidth: 190,   // Width of each table column track
+  theme: 'dark',
+  selectedSlot: null
 });
+
+const emit = defineEmits<{
+  (e: 'select-slot', slot: { tableId: string; tableName: string; startMins: number; endMins: number }): void;
+}>();
 
 const timelineScrollContainer = ref<HTMLDivElement | null>(null);
 </script>
 
 <template>
-  <div class="relative flex flex-col flex-1 min-h-0 bg-[#0e1012] border border-[#2d3139] rounded-xl overflow-hidden shadow-2xl">
+  <div 
+    :class="[
+      theme === 'light' ? 'bg-white border-slate-200 shadow-xl' : 'bg-[#0e1012] border-[#2d3139] shadow-2xl',
+      'relative flex flex-col flex-1 min-h-0 border rounded-xl overflow-hidden'
+    ]"
+  >
     
     <!-- Timeline scroll container -->
     <div 
       ref="timelineScrollContainer"
-      class="flex-1 overflow-auto bg-[#111315] scrollbar-thin outline-none"
+      :class="[
+        theme === 'light' ? 'bg-[#f8fafc]' : 'bg-[#111315]',
+        'flex-1 overflow-auto scrollbar-thin outline-none'
+      ]"
     >
       <!-- Sticky headers at the top of scrolling view -->
       <TableHeader
         :tables="tables"
         :column-width="columnWidth"
+        :theme="theme"
       />
 
       <!-- Core timeline body track -->
@@ -43,6 +61,7 @@ const timelineScrollContainer = ref<HTMLDivElement | null>(null);
           :opening-time="openingTime"
           :closing-time="closingTime"
           :pixels-per-minute="pixelsPerMinute"
+          :theme="theme"
           class="sticky left-0 z-20"
         />
 
@@ -63,8 +82,12 @@ const timelineScrollContainer = ref<HTMLDivElement | null>(null);
             :table="table"
             :opening-time="openingTime"
             :closing-time="closingTime"
+            :timezone="timezone"
             :pixels-per-minute="pixelsPerMinute"
             :column-width="columnWidth"
+            :theme="theme"
+            :selected-slot="selectedSlot"
+            @select-slot="(slot) => emit('select-slot', slot)"
           />
         </div>
       </div>
@@ -79,13 +102,13 @@ const timelineScrollContainer = ref<HTMLDivElement | null>(null);
   height: 8px;
 }
 .scrollbar-thin::-webkit-scrollbar-track {
-  background: #111315;
+  background: transparent;
 }
 .scrollbar-thin::-webkit-scrollbar-thumb {
-  background: #2d3139;
+  background: rgba(148, 163, 184, 0.3);
   border-radius: 4px;
 }
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-  background: #3f4550;
+  background: rgba(148, 163, 184, 0.5);
 }
 </style>

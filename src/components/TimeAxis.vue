@@ -1,19 +1,21 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { generateTimeTicks, minutesToTime, timeToMinutes } from '../utils/time';
+import { generateTimeTicks, minutesToTime } from '../utils/time';
 
-const props = defineProps<{
-  openingTime: string; // "11:00"
-  closingTime: string; // "23:40"
-  pixelsPerMinute: number; // e.g. 1.5 or 2
-  intervalMinutes?: number; // defaults to 30
-}>();
+const props = withDefaults(defineProps<{
+  openingTime: string;
+  closingTime: string;
+  pixelsPerMinute: number;
+  intervalMinutes?: number;
+  theme?: 'dark' | 'light';
+}>(), {
+  intervalMinutes: 30,
+  theme: 'dark'
+});
 
 // Generate minutes representation for our ticks
 const timeTicks = computed(() => {
-  const interval = props.intervalMinutes ?? 30;
-  // Generate starting from opening time to closing time, rounding up to next hours if needed
-  return generateTimeTicks(props.openingTime, props.closingTime, interval);
+  return generateTimeTicks(props.openingTime, props.closingTime, props.intervalMinutes);
 });
 
 // Converts a tick in minutes to a readable clock "HH:MM"
@@ -21,25 +23,32 @@ function formatTick(tickMinutes: number): string {
   return minutesToTime(tickMinutes);
 }
 
-// Compute dynamic height for a single 30-minute block
+// Compute dynamic height for a single 35-minute block
 const blockHeight = computed(() => {
-  const interval = props.intervalMinutes ?? 30;
-  return `${interval * props.pixelsPerMinute}px`;
+  return `${props.intervalMinutes * props.pixelsPerMinute}px`;
 });
 </script>
 
 <template>
-  <div class="relative bg-[#111315] select-none border-r border-[#2d3139]" style="width: 70px;">
+  <div 
+    :class="[
+      theme === 'light' ? 'bg-slate-50 border-slate-200 text-slate-600' : 'bg-[#111315] border-[#2d3139] text-[#718096]',
+      'relative select-none border-r transition-colors'
+    ]"
+    style="width: 70px;"
+  >
     <!-- Time Ticks Column -->
     <div class="flex flex-col">
       <div
         v-for="tick in timeTicks"
         :key="tick"
-        class="relative flex items-center justify-end pr-3 text-[11px] font-mono font-medium text-gray-500"
         :style="{ height: blockHeight }"
+        class="relative flex items-center justify-end pr-3.5 text-[10px] font-mono font-bold"
       >
         <!-- Horizontal line helper inside time axis -->
-        <div class="absolute -right-[1px] w-1.5 h-[1px] bg-[#2d3139]"></div>
+        <div 
+          :class="[theme === 'light' ? 'bg-slate-200' : 'bg-[#2d3139]', 'absolute -right-[1px] w-1.5 h-[1px]']"
+        ></div>
         <span>{{ formatTick(tick) }}</span>
       </div>
     </div>
