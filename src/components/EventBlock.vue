@@ -166,7 +166,7 @@ const themeColors = computed(() => {
         return {
           bg: isDark ? 'bg-zinc-900/80' : 'bg-white/80',
           borderL: 'border-l-emerald-500',
-          badgeBg: 'bg-emerald-500/10 text-emerald-505 border-emerald-500/20',
+          badgeBg: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
           textClass: 'text-emerald-400',
           accentBorder: 'border-emerald-500/30',
           progressBarBg: 'bg-emerald-500'
@@ -184,7 +184,7 @@ const themeColors = computed(() => {
         return {
           bg: isDark ? 'bg-zinc-900/80' : 'bg-white/80',
           borderL: 'border-l-slate-500',
-          badgeBg: 'bg-slate-500/10 text-slate-505 border-slate-500/20',
+          badgeBg: 'bg-slate-500/10 text-slate-500 border-slate-500/20',
           textClass: 'text-slate-500',
           accentBorder: 'border-slate-500/20',
           progressBarBg: 'bg-slate-500'
@@ -233,9 +233,12 @@ function formatDisplayTime(val: string): string {
   >
     <!-- Progress Indicator for Hover Intent -->
     <div 
-      v-if="isHovered && !showDetails"
+      v-if="isHovered"
       class="event-hover-progress"
-      :class="themeColors.progressBarBg"
+      :class="[
+        themeColors.progressBarBg,
+        showDetails ? 'event-hover-progress-complete' : ''
+      ]"
       :style="{ '--hover-delay': `${HOVER_DETAILS_DELAY_MS}ms` }"
     ></div>
 
@@ -356,13 +359,20 @@ function formatDisplayTime(val: string): string {
   position: absolute;
   left: 0;
   bottom: 0;
-  width: 3.5px;
+  width: 4px;
   height: 100%;
   transform: scaleY(0);
   transform-origin: bottom;
   animation: hoverProgress var(--hover-delay) linear forwards;
   pointer-events: none;
   z-index: 10;
+}
+
+.event-hover-progress-complete {
+  transform: scaleY(1) !important;
+  opacity: 0.75;
+  animation: none !important;
+  transition: opacity 300ms ease, transform 150ms ease;
 }
 
 @keyframes hoverProgress {

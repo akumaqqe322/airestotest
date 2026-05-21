@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { Search, Bell, LogOut, Sliders, Sun, Moon } from 'lucide-vue-next';
+import { Search, LogOut, Sun, Moon } from 'lucide-vue-next';
 
 defineProps<{
   restaurantName?: string;
@@ -60,27 +60,6 @@ const searchQuery = ref('');
       >
         <Sun v-if="theme === 'dark'" class="w-4 h-4" />
         <Moon v-else class="w-4 h-4 text-[#fbbf24] fill-[#fbbf24]/20" />
-      </button>
-
-      <button 
-        :class="[
-          theme === 'light' ? 'text-slate-600 hover:text-slate-800 hover:bg-slate-100' : 'text-gray-400 hover:text-white hover:bg-[#1b1e26]',
-          'relative p-2 rounded-lg transition-colors cursor-pointer'
-        ]"
-        aria-label="Уведомления"
-      >
-        <Bell class="w-4 h-4" />
-        <span class="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
-      </button>
-
-      <button 
-        :class="[
-          theme === 'light' ? 'text-slate-600 hover:text-slate-800 hover:bg-slate-100' : 'text-gray-400 hover:text-white hover:bg-[#1b1e26]',
-          'p-2 rounded-lg transition-all flex items-center gap-2 text-xs md:text-sm font-medium border border-transparent cursor-pointer'
-        ]"
-        aria-label="Настройки"
-      >
-        <Sliders class="w-4 h-4" />
       </button>
 
       <button 

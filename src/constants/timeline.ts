@@ -3,4 +3,4 @@ export const TIMELINE_COLUMN_WIDTH = 156;
 export const SELECTION_SNAP_MINUTES = 15;
 export const TIME_AXIS_WIDTH = 72;
 export const TABLE_HEADER_HEIGHT = 52;
-export const HOVER_DETAILS_DELAY_MS = 850;
+export const HOVER_DETAILS_DELAY_MS = 500;
